@@ -1,23 +1,53 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
-  </div>
+    <div id="app">
+        <router-view/>
+    </div>
 </template>
 
 <script>
+const async = require('async');
+const notify = require('bootstrap-notify');
+const s_alert = require('./utils/alert');
+
 export default {
-  name: 'App'
-}
+    name: "App",
+    data() {
+        return {
+
+        };
+    },
+    beforeRouteUpdate(to, from, next) {
+        next();
+    },
+    mounted() {
+      
+    },
+    methods: {
+
+    },
+    // 引入JavaScript外链
+    components: {
+        remote: {
+            render: function(createElement) {
+                var self = this;
+                return createElement("script", {
+                    attrs: {
+                        type: "text/javascript",
+                        src: this.src
+                    }
+                });
+            },
+            props: {
+                src: {
+                    type: String,
+                    required: true
+                }
+            }
+        }
+    }
+};
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
