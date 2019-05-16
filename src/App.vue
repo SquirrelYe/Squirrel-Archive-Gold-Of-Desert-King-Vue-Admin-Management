@@ -16,11 +16,9 @@ export default {
 
         };
     },
-    beforeRouteUpdate(to, from, next) {
-        next();
-    },
     mounted() {
-      
+        // 总是会执行
+        // console.log('app.vue')
     },
     methods: {
 

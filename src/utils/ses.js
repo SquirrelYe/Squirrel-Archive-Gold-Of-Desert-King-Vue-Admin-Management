@@ -1,21 +1,20 @@
 const ses=window.sessionStorage;
 
-module.exports={
-        
+module.exports={        
     //设置sessionStorage
-    setSes(key,value) {
+    setSessionStorage(key,value) {
         ses.setItem(key,value);
     },
     //读取sessionStorage
-    getSes(key) {
+    getSessionStorage(key) {
         return ses.getItem(key);
     },
     //清除sessionStorage
-    clearOneSes(key) {
+    clearOneSessionStorageByKey(key) {
         ses.removeItem(key)
     },
     //清除所有sessionStorage
-    clearAllSes() {
+    clearAllSessionStorage() {
         ses.clear()
     }
 }

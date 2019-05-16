@@ -75,12 +75,11 @@
                                     <img src="static/images/gallery/2.jpg" class="thumb-img" alt="work-thumbnail">
                                 </a>
                                 <h5 class="text-center">
+                                    赛事编号：{{item.id}}<br>
                                     赛事名称：{{item.name}}<br>
                                     赛事说明：{{item.detail}}<br>
                                     开始时间：{{item.start}}<br>
-                                    <!-- 持续财年：{{item.Yearid}}<br>
-                                    单个财年：{{item.stay}}<br> -->
-                                    <!-- 创建时间：{{item.updated_at|formatTime}} -->
+                                    创建时间：{{item.created_at|formatTime}}
                                 </h5>
                             </div>
                         </div>
@@ -108,22 +107,19 @@ export default {
     data() {
         return {
             icon_src:"static/images/users/avatar-6.jpg",
-            items:[{name:'yx',detail:'cs',start:'2019',condition:0}],
+            items:null,
             condition:-1
         };
     },
+    beforeRouteEnter (to, from, next) {
+        console.log('beforeRouteEnter')
+        next()
+    },
     mounted() {
         this.init();
-        // if (ses.getSes("userinfo")== null) {
-        //     s_alert.basic("登录会话过期，请重新登录！");
-        //     this.$router.push({name:'login'});
-        // } else {
-        // }
     },
     updated() {
-        $(function() {
-            $("[data-toggle='tooltip']").tooltip();
-        });
+        $(function() { $("[data-toggle='tooltip']").tooltip(); });
     },
     filters: {
         formatTime(val) {
@@ -138,13 +134,12 @@ export default {
     methods: {
         init() {
             this.getAllGame();
-            this.condition=-1;
         },
-        //获取所有公司列表
+        // 获取所有公司列表
         getAllGame() {
             apis.getAllGame().then(res => {
                 print.log("获取到 赛事列表信息", res.data);
-                this.items = res.data;
+                this.items = res.data.rows;
             });
         },
         // 选择赛事
@@ -155,7 +150,7 @@ export default {
             }else{
                 apis.getOneGameById(item.id)
                 .then(res=>{
-                    ses.setSes('gameinfo',JSON.stringify(res.data))
+                    ses.setSessionStorage('gameinfo',JSON.stringify(res.data))
                     s_alert.Success(`加入成功，赛事：${item.name}`,"2秒后自动跳转到赛事界面……","success");
                     setTimeout(() => {                        
                         this.$router.push({name:'menu'});
@@ -166,14 +161,8 @@ export default {
         // 选择不同状态赛事
         getGame(index){
             this.condition=index;
-            if(index==-1){
-                this.getAllGame();
-            }else{
-                apis.getGameByCondition(index)
-                .then(res=>{
-                    this.items = res.data;
-                })
-            }
+            if(index==-1) this.getAllGame();
+            else apis.getGameByCondition(index).then(res=>{ this.items = res.data.rows; })
         }
     }
 };

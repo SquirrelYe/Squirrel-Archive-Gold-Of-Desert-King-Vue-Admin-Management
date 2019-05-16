@@ -10,10 +10,15 @@
       <div class="col-md-12">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">Sway商战大赛-赛事列表</h3>
+            <h3 class="panel-title">沙漠掘金后台管理系统-赛事列表</h3>
           </div>
           <div class="panel-body">
             <div class="row">
+              <div class="col-sm-6">
+                <div class="m-b-30" data-toggle="modal" data-target="#myindus" @click="add()">
+                    <button id="addToTable" class="btn btn-primary waves-effect waves-light">新建比赛<i class="fa fa-plus"></i></button>
+                </div>
+              </div>
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="table-responsive">
                   <table class="table table-bordered table-striped" style id="datatable-editable">
@@ -43,6 +48,9 @@
                         <td class="actions" align='center'>
                           <a class="waves-effect waves-light" @click="startGame(item)" data-toggle="tooltip" data-placement="top" title="启动比赛">
                             <i class="fa  fa-play"></i>
+                          </a>
+                          <a class="waves-effect waves-light" @click="pauseGame(item)" data-toggle="tooltip" data-placement="top" title="暂停比赛">
+                            <i class="fa  fa-pause"></i>
                           </a>
                           <a class="waves-effect waves-light" @click="stopGame(item)" data-toggle="tooltip" data-placement="top" title="结束比赛">
                             <i class="fa  fa-stop"></i>
@@ -92,17 +100,12 @@ const req = require("../../utils/axios");
 const print = require("../../utils/print");
 const apis = require("../../utils/api/apis");
 
-import app from "../../App.vue";
 const moment = require('moment');
-var App = app;
 
 export default {
   name: "listgame",
   data() {
     return {
-      company_id:'',
-      Yearid:'',
-      
       // 分页数据
       items: [],
       showItems: [],
@@ -121,10 +124,6 @@ export default {
       if(x==2) return '比赛已结束';
     },
   },
-  beforeMount(){
-    this.company_id = JSON.parse(ses.getSes("userinfo")).company_id;
-    this.Yearid = JSON.parse(ses.getSes("gameinfo")).Yearid;
-  },
   mounted() {
       this.init()
   },
@@ -135,6 +134,10 @@ export default {
     init(){
         this.getshowItems();
     },
+    // 添加
+    add(){
+      s_alert.Warning('请联系后台技术人员处理','涉及到权限问题，您暂时无法处理')
+    },
     // 获取所有比赛列表
     getshowItems() {
       apis.getAllGame()
@@ -142,67 +145,58 @@ export default {
         print.log(res.data);
         // 分页
         this.currentPage='0'
-        this.show(res.data)
+        this.show(res.data.rows)
       })
     },
     // 确认删除比赛
     deleteGame(item) {
       print.log('删除比赛信息->',item);
-      let del=item
-      let that=this
       if(confirm('确定删除吗')){
-        that.dele(del)
+        this.dele(item)
       }else{
 
       }      
     },    
     // 删除比赛
     dele(del){
-      req.post_Param('api/game',{
-        'judge':3,
-        'id':del.id
-      })
+      apis.delOneGameById(del.id)
       .then(res => {
-        if(res.data.success){
+        if(res.data.affectRows === 1){
             this.init()
-            swal("删除成功!", "", "success");
+            s_alert.Success("删除成功!", "成功移除了一场比赛", "success");
           }else{
             this.init()
-            swal("删除失败!", "请检查", "warning");
+            s_alert.Success("删除失败!", "请检查", "warning");
           }
       })
     },
     // 开始比赛
     startGame(item){
-      req.post_Param('api/game',{
-        'judge':2,
-        'id':item.id,
-        'condition':1
-      })
+      apis.updateOneGameById(item.id,1)
       .then(res => {
-        if(res.data.success){
+        if(res.data.affectRows[0] === 1){
             this.init()
-            swal("启动比赛成功!", "", "success");
+            s_alert.Success("比赛开始成功!", "成功开始了一场比赛", "success");
           }else{
             this.init()
-            swal("启动失败!", "请检查", "warning");
+            s_alert.Success("开始失败!", "请检查", "warning");
           }
       })
     },
-    // 开始比赛
+    // 暂停比赛
+    pauseGame(item){
+
+    },
+    // 结束比赛
     stopGame(item){
-      req.post_Param('api/game',{
-        'judge':2,
-        'id':item.id,
-        'condition':2
-      })
+      apis.updateOneGameById(item.id,2)
       .then(res => {
-        if(res.data.success){
+        if(res.data.affectRows[0] === 1){
             this.init()
-            swal("结束比赛成功!", "", "success");
+            s_alert.Success("比赛已结束!", "成功结束了一场比赛", "success");
           }else{
             this.init()
-            swal("结束失败!", "请检查", "warning");
+            s_alert.Success("操作失败!", "请检查", "warning");
           }
       })
     },

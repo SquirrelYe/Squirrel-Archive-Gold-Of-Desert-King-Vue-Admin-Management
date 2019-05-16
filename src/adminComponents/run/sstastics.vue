@@ -10,45 +10,50 @@
       <div class="col-sm-12">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">Sway商战大赛-参赛公司资产情况</h3>
+            <h3 class="panel-title">沙漠掘金后台管理系统-参赛团队资产情况</h3>
           </div>
           <div class="panel-body">
             <div class="table-responsive">
-              <button class="btn btn-icon waves-effect waves-light btn-warning m-b-5" data-toggle="tooltip" data-target="#statistics" data-placement="top" title="初始化公司资产">
+              <button class="btn btn-icon waves-effect waves-light btn-warning m-b-5" data-toggle="tooltip" data-target="#statistics" data-placement="top" title="初始化团队资产">
                 <i class="fa fa-wrench" data-toggle="modal" data-target="#statistics"></i> 
               </button>
-              <button class="btn btn-icon waves-effect waves-light btn-danger m-b-5" data-toggle="tooltip" data-target="#statistics" data-placement="top" title="删除所有公司资产" @click="deleteAll()"> 
+              <button class="btn btn-icon waves-effect waves-light btn-danger m-b-5" data-toggle="tooltip" data-target="#statistics" data-placement="top" title="删除所有团队资产" @click="deleteAll()"> 
                 <i class="fa fa-remove"></i>
               </button>
               <table class="table table-striped table-hover" style id="datatable-editable">
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>财年</th>
-                    <th>公司名称</th>
-                    <th>流动资金</th>
-                    <th>固定资金</th>
-                    <th>总资产</th>
-                    <th>品牌价值</th>
-                    <th>更新日期</th>
+                    <th>团队名称</th>
+                    <th>可用资金</th>
+                    <th>剩余载重</th>
+                    <th>食物</th>
+                    <th>水</th>
+                    <th>指南针</th>
+                    <th>帐篷</th>
+                    <th>智者密函</th>
+                    <th>金块</th>
+                    <th>更新时间</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="gradeX" v-for="(item,index) in showItems" :key="index">
                     <td>{{index}}</td>
-                    <td>{{item.Yearid}}</td>
-                    <td v-if="item.company">{{item.company.name}}</td>
-                    <td v-else></td>
-                    <td>{{item.float}}w</td>
-                    <td>{{item.fixed}}w</td>
-                    <td>{{item.total}}w</td>
-                    <td>{{item.brand}}</td>
+                    <td v-if="item.team">{{item.team.name}}</td>  <td v-else></td>
+                    <td>{{item.money}}</td>
+                    <td>{{item.load}}</td>
+                    <td>{{item.food}}</td>
+                    <td>{{item.water}}</td>
+                    <td>{{item.compass}}</td>
+                    <td>{{item.tent}}</td>
+                    <td>{{item.secret}}</td>
+                    <td>{{item.gold}}</td>
                     <td>{{item.updated_at|formatTime}}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <p><strong>注意:上图所示价格单位均为万元。</strong></p>
+            <p><strong>注意:资产信息在比赛过程中会随时变化，刷新页面以获取最新信息。</strong></p>
           </div>
         </div>
       </div>
@@ -60,7 +65,7 @@
         <div class="modal-content">
             <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h4 class="modal-title" id="myModalLabel">参赛者公司资产初始化</h4>
+            <h4 class="modal-title" id="myModalLabel">参赛者团队资产初始化</h4>
             </div>
             <!-- 内容 -->
             <div class="modal-body" align='center'>
@@ -71,11 +76,17 @@
                         <div class="panel-body">
                           <form class="form-horizontal" role="form">
                               <div class="form-group">
-                                  <label for="inputEmail3" class="col-sm-3 control-label">流动资金(万)</label>
+                                  <label for="inputEmail3" class="col-sm-3 control-label">初始资金</label>
                                   <div class="col-sm-9">
-                                    <input type="number" class="form-control" placeholder="3000" v-model="float">
+                                    <input type="number" class="form-control" placeholder="100" v-model="money">
                                   </div>
-                              </div>                           
+                              </div>      
+                              <div class="form-group">
+                                  <label for="inputEmail3" class="col-sm-3 control-label">初始载重</label>
+                                  <div class="col-sm-9">
+                                    <input type="number" class="form-control" placeholder="100" v-model="load">
+                                  </div>
+                              </div>                   
                           </form>
                       </div>
                     </div>
@@ -101,25 +112,18 @@ const print = require("../../utils/print");
 const apis = require("../../utils/api/apis");
 const notify = require("bootstrap-notify");
 
-import app from "../../App.vue";
 const moment = require("moment");
-var App = app;
 
 export default {
-  name: "stransaction",
+  name: "statistics",
   data() {
     return {
-      company_id:'',
-      showTransaction: '',
-      company:'',
-      showItems:'',
+      showItems:null,
 
       // 初始化资产
-      float:3000
+      money:100,
+      load:100
     };
-  },
-  beforeMount() {
-
   },
   updated() {    
     $(function () { $("[data-toggle='tooltip']").tooltip(); });
@@ -136,49 +140,43 @@ export default {
     init(){
       this.showAllStastics();
     },
+    // 获取比赛参赛团队资产信息
     showAllStastics() {
-      apis.getAllStatisticWithCompanyInfo()
+      apis.getAllStatisticByGameId(JSON.parse(ses.getSessionStorage('gameinfo')).id)
       .then(res => {
           print.log(res.data);
-          this.showItems = res.data;
+          this.showItems = res.data.rows;
       })
     },
-    // 初始化参赛者公司资产信息
+    // 初始化参赛者团队资产信息
     initStastics(){
-      apis.getAllCompany()
+      apis.getAllTeam()
       .then(res=>{
-        print.log('所有的公司信息->',res.data)
-        for (let i = 0; i < res.data.length; i++) {
-          const e = res.data[i];
-          req.post_Param('api/statistic',{
-            'judge':1,
-            'id':0,
-            'Yearid':1,
-            'float':this.float,
-            'fixed':0,
-            'total':this.float,
-            'brand':100,
-            'condition':1,
-            'company_id':e.id
-          })
+        print.log('所有的团队信息->',res.data.rows)
+        for (let i = 0; i < res.data.rows.length; i++) {
+          const e = res.data.rows[i];
+          apis.creatOneStatistic(e.game_id,e.id,this.money,this.load)
           .then(msg=>{
-            // print.log(msg.data)
-            if(i==res.data.length-1){
+            print.log(msg.data)
+            if(i==res.data.rows.length-1){
               this.init()
-              swal("参赛公司资产初始化成功!", `你成功初始化了${res.data.length}个参赛公司资产信息！`, "success");              
+              s_alert.Success("参赛团队资产初始化成功!", `你成功初始化了${res.data.rows.length}个参赛团队资产信息！`, "success");              
             }
           })
         }
       })
     },
-    // 删除所有公司资产信息
+    // 删除所有团队资产信息
     deleteAll(){
       if(confirm('这将清空所有参赛者资产信息！请确认！')){
-        req.post_Param('api/statistic',{'judge':6})
+        apis.deleteAllByStatisticGameId(JSON.parse(ses.getSessionStorage('gameinfo')).id)
         .then(res=>{
-          if(res.data.success){
-            swal("清除公司资产信息成功!", ``, "success");  
+          if(res.data.affectRows !== 0){
             this.init()
+            s_alert.Success("删除成功!", "成功清空所有资产信息", "success");
+          }else{
+            this.init()
+            s_alert.Success("删除失败!", "请检查", "warning");
           }
         })
       }

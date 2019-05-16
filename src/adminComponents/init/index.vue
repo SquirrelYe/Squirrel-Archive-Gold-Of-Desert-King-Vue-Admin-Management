@@ -6,19 +6,8 @@
                 <div class="col-sm-12">
                     <div class="btn-group pull-right">
                         <button type="button" class="btn btn-primary dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-expanded="false"> 设置 <span class="m-l-5"><i class="fa fa-cog"></i></span></button>
-                        <!-- <ul class="dropdown-menu" role="menu">
-                            <li><a href="#">测试</a></li>
-                            <li><a href="#">测试</a></li>
-                            <li><a href="#">测试</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#">测试</a></li>
-                        </ul> -->
                     </div>
-                    <h4 class="page-title" style="color:red" v-if="showStasticsItem">当前所在公司 {{showStasticsItem.company.name}}!&nbsp;&nbsp;&nbsp;&nbsp;当前财年：{{gameinfo.Yearid}}</h4>
-                    <h4 class="page-title" style="color:red" v-if="userinfo">
-                        <div v-if="type==0">参赛者 {{userinfo.cname}}</div>
-                        <div v-if="type==1">管理员 {{userinfo.cname}}</div>
-                    </h4>
+                    <h4 class="page-title" style="color:red">管理员端</h4>
                 </div>
             </div>
 
@@ -82,60 +71,7 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="row text-center" v-if="showStasticsItem">
-                <div class="col-md-6 col-sm-6 col-lg-3">
-                    <div class="panel panel-border panel-purple widget-s-1">
-                        <div class="panel-heading"> </div>
-                        <div class="panel-body">
-                        <div class="h2 text-purple">{{showStasticsItem.float}}</div>
-                        <span class="text-muted">流动资金(单位万)</span>
-                        <div class="text-right">
-                            <i class="ion-social-usd fa-2x text-purple"></i>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                        
-                <div class="col-md-6 col-sm-6 col-lg-3">
-                    <div class="panel panel-border panel-pink widget-s-1">
-                        <div class="panel-heading"> </div>
-                        <div class="panel-body">
-                        <div class="h2 text-pink">{{showStasticsItem.fixed}}</div>
-                        <span class="text-muted">固定资金(单位万)</span>
-                        <div class="text-right">
-                            <i class="ion-ios7-cart fa-2x text-pink"></i>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-sm-6 col-lg-3">
-                    <div class="panel panel-border panel-primary widget-s-1">
-                        <div class="panel-heading"> </div>
-                        <div class="panel-body">
-                        <div class="h2 text-primary">{{showStasticsItem.total}}</div>
-                        <span class="text-muted">总资产(单位万)</span>
-                        <div class="text-right">
-                            <i class="ion-android-contacts fa-2x text-primary"></i>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                        
-                <div class="col-md-6 col-sm-6 col-lg-3">
-                    <div class="panel panel-border panel-success widget-s-1">
-                        <div class="panel-heading"> </div>
-                        <div class="panel-body">
-                        <div class="h2 text-success">{{showStasticsItem.brand}}</div>
-                        <span class="text-muted">品牌价值(初始值100)</span>
-                        <div class="text-right">
-                            <i class="ion-eye fa-2x text-success"></i>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
+                       
 
             <div class="row">
                 <div class="col-lg-8">
@@ -203,58 +139,28 @@ export default {
   name: "index",
   data() {
     return {
-        showStasticsItem:'',
-        userinfo:'',
-        gameinfo:'',
-        type:''
+        
     };
   },
   filters:{
-    formatCondition(x){
-        if(x==0) return '存续';
-        if(x==-1) return '公司破产'
-    },
-    formatTime(val){
-      return moment(val).format('YYYY-MM-DD HH:mm:ss')
-    }
+      
   },
   mounted() {
-      this.init()
-      setInterval(() => {
-          this.init()
-      }, 10000);
+
   },
   methods: {
-    init(){
-      this.showStastics();
-      this.getinfo();
-    },
-    // 获取资产信息
-    showStastics(){
-        let company_id=JSON.parse(ses.getSes('userinfo')).company_id
-        apis.getOneStatisticByCompanyId(company_id)
-        .then(res => {   
-        //   print.log('公司资产信息',res.data)
-          this.showStasticsItem=res.data
-        })
-    },
-    // 获取个人信息
-    getinfo(){
-        this.userinfo=JSON.parse(ses.getSes('userinfo'))
-        this.gameinfo=JSON.parse(ses.getSes('gameinfo'))
-        this.type=ses.getSes('type')
-    }
+      
     }
 };
 </script>
 
 <style scoped>
 .line1{
-    background-image: url('../../assets/images/line1.png');
+    background-image: url('../../assets/line1.png');
     background-size:100% 100%;
 }
 .line2{
-    background-image: url('../../assets/images/line2.png');
+    background-image: url('../../assets/line2.png');
     background-size:100% 100%;
 }
 </style>

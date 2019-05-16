@@ -10,10 +10,16 @@
       <div class="col-md-12">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">Sway商战大赛-管理员管理</h3>
+            <h3 class="panel-title">沙漠淘金后台管理系统-管理员管理</h3>
           </div>
           <div class="panel-body">
             <div class="row">
+
+              <div class="col-sm-6">
+                <div class="m-b-30" data-toggle="modal" data-target="#myindus" @click="add()">
+                    <button id="addToTable" class="btn btn-primary waves-effect waves-light">添加管理员<i class="fa fa-plus"></i></button>
+                </div>
+              </div>
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="table-responsive">
                   <table class="table table-bordered table-striped" style id="datatable-editable">
@@ -21,10 +27,11 @@
                       <tr>
                         <th>#</th>
                         <th>管理员ID</th>
-                        <th>用户名</th>
                         <th>中文名</th>
+                        <th>用户名</th>
                         <th>密码</th>
                         <th>邮箱</th>
+                        <th>手机</th>
                         <th>创建时间</th>
                         <th>执行操作</th>
                       </tr>
@@ -33,10 +40,11 @@
                       <tr class="gradeX" v-for="(item,index) in showItems" :key="index">
                         <td>{{index}}</td>
                         <td>{{item.id}}</td>
-                        <td>{{item.name}}</td>
                         <td>{{item.cname}}</td>
+                        <td>{{item.name}}</td>
                         <td>{{item.pass}}</td>
-                        <td>{{item.email}}</td>
+                        <td>{{item.mail}}</td>
+                        <td>{{item.phone}}</td>
                         <td>{{item.created_at|formatTime}}</td>
                         <td class="actions" align='center'>
                           <a class="on-default remove-row" @click="isDeleteItem(item)">
@@ -84,17 +92,12 @@ const req = require("../../utils/axios");
 const print = require("../../utils/print");
 const apis = require("../../utils/api/apis");
 
-import app from "../../App.vue";
 const moment = require('moment');
-var App = app;
 
 export default {
   name: "admin",
   data() {
-    return {
-      company_id:'',
-      Yearid:'',
-      
+    return {      
       // 分页数据
       items: [],
       showItems: [],
@@ -104,35 +107,29 @@ export default {
     };
   },
   filters:{
-    formatTime(x){
-      return moment(x).format('YYYY-MM-DD HH:mm:ss')
-    }
+    formatTime(x){ return moment(x).format('YYYY-MM-DD HH:mm:ss') }
   },
-  beforeMount(){
-    this.company_id = JSON.parse(ses.getSes("userinfo")).company_id;
-    this.Yearid = JSON.parse(ses.getSes("gameinfo")).Yearid;
-  },
-  mounted() {
-      this.init()
-  },
-  updated() {    
-    $(function () { $("[data-toggle='tooltip']").tooltip(); });
-  },
+  mounted() { this.init() },
+  updated() {  $(function () { $("[data-toggle='tooltip']").tooltip(); }); },
   methods: {
-    init(){
-        this.getSway();
+    init(){ this.getAllUser(); },
+    // 添加
+    add(){
+      s_alert.Warning('请联系后台技术人员处理','涉及到权限问题，您暂时无法处理')
     },
-    getSway() {
-      apis.getAllAdmin()
+    // 获取所有参赛者
+    getAllUser() {
+      apis.getAllUserByType(1)
         .then(res => {
           print.log(res.data);
           // 分页
           this.currentPage='0'
-          this.show(res.data)
+          this.show(res.data.rows)
         })
     },
+    // 判断是否删除
     isDeleteItem(item) {
-      print.log(item);
+      print.log('确定删除吗',item);
       let del=item
       let that=this
       if(confirm('确定删除吗')){
@@ -141,18 +138,16 @@ export default {
 
       }      
     },    
+    // 删除参赛者
     DeleteItem(del){
-      req.post_Param('api/admin',{
-        'judge':2,
-        'id':del.id
-      })
+      apis.delOneUserById(del.id)
       .then(res => {
-        if(res.data.success){
+        if(res.data.affectRows === 1){
             this.init()
-            swal("删除成功!", "你开除了一名成员", "success");
+            s_alert.Success("删除成功!", "成功移除了一名管理员", "success");
           }else{
             this.init()
-            swal("删除失败!", "请检查", "warning");
+            s_alert.Success("删除失败!", "请检查", "warning");
           }
       })
     },

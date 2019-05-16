@@ -106,10 +106,18 @@ export default {
                     pass: this.pass
                 }).then(res => {
                     print.log(res.data);
-                    if (res.data != null && res.data.type == 1) {
-                        s_alert.Success( "登录成功！", "现在可以对游戏进行设置", "success" );
-                        this.$router.push({ name: "game" });
+                    if (res.data != '') {
+                        if(res.data.type == 1){
+                            ses.setSessionStorage('userinfo',JSON.stringify(res.data))
+                            s_alert.Success( "登录成功！", "现在可以对游戏进行设置", "success" );
+                            this.$router.push({ name: "game" });
+                        }else{
+                            s_alert.Success( "没有权限进入！", "此系统仅限管理员能操作", "warning" )
+                        }
+                    }else{
+                        s_alert.Success( "用户名或密码错误！", "请检查后重试", "warning" )
                     }
+                    
                 });
             }
         },
