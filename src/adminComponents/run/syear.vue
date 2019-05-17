@@ -151,11 +151,15 @@ const print = require("../../utils/print");
 const apis = require("../../utils/api/apis");
 
 const async=require('async')
+const notify = require("bootstrap-notify");
 
 export default {
   name: "syear",
   data() {
     return {
+        gid:null,
+        day_id:null,
+
         showGameItems: null,
         showStasticsItems: null,
         showThingItem:null,
@@ -170,9 +174,7 @@ export default {
 
     };
   },
-  mounted() {
-      this.init()
-  },
+  mounted() { this.init() },
   updated() {    
     $(function () { $("[data-toggle='tooltip']").tooltip(); });
   },
@@ -206,14 +208,16 @@ export default {
         .then( res=>{
             print.log('当前赛事信息',res.data)
             this.showGameItems = res.data
+            this.gid = this.showGameItems.id
+            this.day_id = this.showGameItems.day_id
         })
     },
     // 获取参赛团队资产信息
     getTeamItems() {
         apis.getAllTeamByGameId(JSON.parse(ses.getSessionStorage("gameinfo")).id)
         .then(res => {
-          print.log('获取参赛团队资产信息',res.data);
-          this.showStasticsItems=res.data.rows
+            print.log('获取参赛团队资产信息',res.data);
+            this.showStasticsItems=res.data.rows
         })
     },
     // 获取物品信息
@@ -244,11 +248,13 @@ export default {
                 }else{
                     // 更新数量
                     let id = res.data[0].id
+                    let onumber = this.number
                     let number = Number(res.data[0].number) + Number(this.number)
                     let use = Number(res.data[0].use) + Number(this.number * 3)
                     apis.update_number(id, team.statistic_id, this.thing, number, use)
                     .then(res=>{
                         console.log(res.data)
+                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作')
                         s_alert.Success('团队资产信息更新成功','','success')
                         this.init()
                     })
@@ -258,10 +264,12 @@ export default {
             apis.getOneStastisticById(team.statistic_id)
             .then(res=>{
                 console.log(res.data)
+                let onumber = this.number
                 let number = Number(res.data.money) + Number(this.number)
                 apis.updateMoney(team.statistic_id , number)
                 .then(res=>{
                     console.log(res.data)
+                    apis.addOneTran(this.gid ,-1 ,team.id ,team.id,onumber,1, this.thing,1,'组委会操作')
                     s_alert.Success('团队资产信息更新成功','','success')
                     this.init()
                 })
@@ -276,11 +284,13 @@ export default {
                 }else{
                     // 更新数量
                     let id = res.data[0].id
+                    let onumber = this.number
                     let number = Number(res.data[0].number) + Number(this.number)
                     let use = 0
                     apis.update_number(id, team.statistic_id, this.thing, number, use)
                     .then(res=>{
                         console.log(res.data)
+                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作')
                         s_alert.Success('团队资产信息更新成功','','success')
                         this.init()
                     })
@@ -291,14 +301,12 @@ export default {
     // 点击进入下一日程
     nextYear(item) {
         print.log('当前比赛信息',item)
-        this.getTeamItems();
         if (confirm("你确定要进入下一日程？这将对参赛者资产进行清算！")) {
             this.updateDay(item);
         }
     },
     // 开启天气显示
     openWhether(item){
-        this.getTeamItems();
         print.log('当前比赛信息',item)
         if(item.judgewhether == 1){
             s_alert.Warning('当前日期天气显示已经开启','请不要重复开启')
@@ -332,45 +340,48 @@ export default {
     },
     // 更新日程信息
     updateDay(item) {
-        this.getTeamItems();
         let game = item;  // 当前赛事信息
-        let team = this.showStasticsItems   //  所有团队信息
-        //  判断能否进入下一天（时间最大25，所有人必须位于当前日期）
-        if(game.day.day < 25){
-            if(item.judgewhether == 0) s_alert.Warning('请先开启天气显示 ','未开启天气显示，参赛人员无法操作');
-            else{
-                // 判断所有团队信息
-                let judge = true
-                let nteam = []
-                for (let i = 0; i < team.length; i++) {
-                    const e = team[i].day.day;
-                    if(e != game.day.day){
-                        judge = false;
-                        nteam.push(team[i].name)
+        let team    //  所有团队信息
+        apis.getAllTeamByGameId(JSON.parse(ses.getSessionStorage("gameinfo")).id)
+        .then(res => { 
+            team=res.data.rows
+            //  判断能否进入下一天（时间最大25，所有人必须位于当前日期）
+            if(game.day.day < 25){
+                if(item.judgewhether == 0) s_alert.Warning('请先开启天气显示 ','未开启天气显示，参赛人员无法操作');
+                else{
+                    // 判断所有团队信息
+                    let judge = true, nteam = []
+                    for (let i = 0; i < team.length; i++) {
+                        const e = team[i].day.day;
+                        if(e != game.day.day){
+                            judge = false;
+                            nteam.push(team[i].name)
+                        }
+                    }
+                    if(!judge){
+                        s_alert.Success('还有团队未操作',`未操作的团队清单为：${nteam}`,'warning')
+                        return;
+                    }else{
+                        // 执行资产清算
+                        this.updateRelief(game,team);
                     }
                 }
-                if(!judge){
-                    s_alert.Success('还有团队未操作',`未操作的团队清单为：${nteam}`,'warning')
-                    return;
-                }else{
-                    // 执行资产清算
-                    this.updateRelief(game,team);
-                }
+            }else{
+                s_alert.Success('最后一天啦','第25天为最后一天，再无后续日期可以进入！','warning')
             }
-        }else{
-            s_alert.Success('最后一天啦','第25天为最后一天，再无后续日期可以进入！','warning')
-        }
+        })
+        
     },
     // ---------------------------------------------------资产清算---------------------------------------------------
     updateRelief(game,team){   
         s_alert.Warning('正在计算资产信息，请稍等……','队伍资产更新成功会在右上角显示')
-
+        let judge = 0 
         for (let i = 0; i < team.length; i++) {
             let cteam = team[i]
+            console.group('group')
             print.log('执行团队资产信息更新--->',cteam)
             //对资产扣除价值初始化.
             let index=i
-            this.diggerDeprelief[index]=0
             // 找到天气 & 状态
             let land = cteam.map.land
             let cwhether = 0 
@@ -383,99 +394,345 @@ export default {
             if (land == 5) cwhether = cteam.day.whether_gold
             print.log(land ,condition ,cwhether)
             //循环计算扣除信息
-
-            // 状态一 （晴天 & 高温）
+            // 状态一 （晴天）
             if(cwhether == 0 ){
                 // 获取背包信息
                 apis.findTeamStock(cteam.statistic_id)
                 .then(res=>{
-                    console.log(res.data)
-                    let food = 0, water = 0
+                    console.log('获取背包信息->',res.data)
+                    let food = 0, water = 0 , load = Number(res.data.load) + Number(60) // (1食物 1水 10+50)
                     for (let i = 0; i < res.data.modules.length; i++) {
                         const e = res.data.modules[i];
                         if(e.type == 0) {
                             food = e.statistic_module.number - 1  // 晴天消耗 一个食物
                             apis.updateFoodWaternumber(e.statistic_module.id , food)
+                            apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-食物')
                         }
                         if(e.type == 1) {
                             water = e.statistic_module.number - 1  // 晴天消耗 一个水
                             apis.updateFoodWaternumber(e.statistic_module.id , water)
+                            apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-水')
                         }
                     }
                     console.log('计算消耗的剩余食物和水',food,water)
-                    // 判断队伍状态（迷路与否 ）
-                    if( cteam.lose >= 1){
-                        let lose = cteam.lose - 1
+                    this.judgeTeamCondition(food , water , cteam)
+                    apis.updateLoad(res.data.id , load)
+                    judge ++
+                    if(judge == team.length -1){
+                        // 更新day_id
+                        apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                        apis.updateGameJudgeWhetherById(this.gid , 0)
+                        .then(res=>{
+                            if(res.data[0] == 1) {
+                                s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                this.init()
+                            }
+                        })
+                    }
+                })
+            }
+            // 状态二 （高温）
+            else if( cwhether ==1 ){
+                // 获取背包信息
+                apis.findTeamStock(cteam.statistic_id)
+                .then(res=>{
+                    console.log('获取背包信息->',res.data)
+                    let food = 0, water = 0, load =  Number(res.data.load) + Number(160) // (1食物 3水 10+3*50)
+                    for (let i = 0; i < res.data.modules.length; i++) {
+                        const e = res.data.modules[i];
+                        if(e.type == 0) {
+                            food = e.statistic_module.number - 1  // 高温消耗 1个食物
+                            apis.updateFoodWaternumber(e.statistic_module.id , food)
+                            apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-食物')
+                        }
+                        if(e.type == 1) {
+                            water = e.statistic_module.number - 3  // 高温消耗 3个水
+                            apis.updateFoodWaternumber(e.statistic_module.id , water)
+                            apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,3, e.id,1,'组委会：天气扣除-水')
+                        }
+                    }
+                    console.log('计算消耗的剩余食物和水',food,water)
+                    apis.updateLoad(res.data.id , load)
+                    this.judgeTeamCondition(food , water , cteam)
+                    judge ++
+                    if(judge == team.length -1){
+                        // 更新day_id
+                        apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                        apis.updateGameJudgeWhetherById(this.gid  , 0)
+                        .then(res=>{
+                            if(res.data[0] == 1) {
+                                s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                this.init()
+                            }
+                        })
+                    }
+                })
+            }
+            // 状态三 （沙尘暴）
+            else if( cwhether ==2 ){
+                // 判断是否使用帐篷⛺️
+                if(condition == 1){
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(60) // (1食物 1水 10+50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 1  // 沙尘暴⛺️消耗 1个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 1  // 沙尘暴⛺️消耗 1个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-水')
+                            }
+                        }
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
+                        this.judgeTeamCondition(food , water , cteam)
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }                    
+                    })
+                }else if(condition == 2){       // 使用指南针
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 5  // 沙尘暴无⛺️ 消耗 5个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,5, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 2  // 沙尘暴无⛺️ 消耗 2个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,2, e.id,1,'组委会：天气扣除-水')
+                            }
+                        }
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
+                        this.judgeTeamCondition(food , water , cteam)
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }          
+                    })
+                }else{
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 5  // 沙尘暴无⛺️ 消耗 5个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,5, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 2  // 沙尘暴无⛺️ 消耗 2个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,2, e.id,1,'组委会：天气扣除-水')
+                            }
+                        }
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
                         // 更新迷路时间
-                        apis.updateOneTeamLose(cteam.id , lose)
+                        apis.updateOneTeamLose(cteam.id , 3)
                         // 更新团队状态
                         if(food < 0 || water < 0){
                             apis.updateOneTeamCondition(cteam.id , -3) // 死亡
                             console.error('死亡',cteam)
                         }
-                        else{
-                            if(lose == 0 ) apis.updateOneTeamCondition(cteam.id , 0) // 正常
-                            else apis.updateOneTeamCondition(cteam.id , -2) // 迷路
+                        else apis.updateOneTeamCondition(cteam.id , -2) // 迷路
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }                    
+                    })
+                }
+            }
+            // 状态四 （高温沙尘暴）
+            else if( cwhether ==3 ){
+                // 判断是否使用帐篷⛺️
+                if(condition == 1){
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(160) // (1食物 3水 10+3*50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 1  // 沙尘暴⛺️ 消耗 1个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 3  // 沙尘暴⛺️ 消耗 3个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,3, e.id,1,'组委会：天气扣除-水')
+                            }
                         }
-                    }else{
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
+                        this.judgeTeamCondition(food , water , cteam)
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }                    
+                    })
+                }else if(condition == 2){
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(250) //  (5食物 4水 5*10+4*50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 5  // 沙尘暴⛺️ 消耗 5个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,5, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 4  // 沙尘暴⛺️ 消耗 4个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,4, e.id,1,'组委会：天气扣除-水')
+                            }
+                        }
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
+                        this.judgeTeamCondition(food , water , cteam)
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }                    
+                    })
+                }else{
+                    // 获取背包信息
+                    apis.findTeamStock(cteam.statistic_id)
+                    .then(res=>{
+                        console.log('获取背包信息->',res.data)
+                        let food = 0, water = 0, load =  Number(res.data.load) + Number(250) // (5食物 4水 5*10+4*50)
+                        for (let i = 0; i < res.data.modules.length; i++) {
+                            const e = res.data.modules[i];
+                            if(e.type == 0) {
+                                food = e.statistic_module.number - 5  // 沙尘暴无⛺️ 消耗 5个食物
+                                apis.updateFoodWaternumber(e.statistic_module.id , food)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,5, e.id,1,'组委会：天气扣除-食物')
+                            }
+                            if(e.type == 1) {
+                                water = e.statistic_module.number - 4  // 沙尘暴无⛺️ 消耗 4个水
+                                apis.updateFoodWaternumber(e.statistic_module.id , water)
+                                apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,4, e.id,1,'组委会：天气扣除-水')
+                            }
+                        }
+                        console.log('计算消耗的剩余食物和水',food,water)
+                        apis.updateLoad(res.data.id , load)
+                        // 更新迷路时间
+                        apis.updateOneTeamLose(cteam.id , 3)
                         // 更新团队状态
-                        if(food <=0 || water <=0){
+                        if(food < 0 || water < 0){
                             apis.updateOneTeamCondition(cteam.id , -3) // 死亡
                             console.error('死亡',cteam)
                         }
-                        else apis.updateOneTeamCondition(cteam.id , 0) // 正常
-                    }
-                })
-            }
-            // 状态二 （沙尘暴 & 高温沙尘暴）
-            else if( cwhether ==1 ||cwhether == 2 || cwhether ==3 ){
+                        else apis.updateOneTeamCondition(cteam.id , -2) // 迷路
+                        judge ++
+                        if(judge == team.length -1){
+                            // 更新day_id
+                            apis.updateOneGameDayById(this.gid , this.day_id+1 )
+                            apis.updateGameJudgeWhetherById(this.gid  , 0)
+                            .then(res=>{
+                                if(res.data[0] == 1) {
+                                    s_alert.Success('成功进入下一天','参赛队伍资产更新成功','success')
+                                    this.init()
+                                }
+                            })
+                        }
+                    })
+                }                
+            }   
 
-            }         
+            $.notify(
+                {message: `参赛团队${cteam.name}资产信息更新成功`},
+                {type: "success"}
+            );
+            console.groupEnd()      
         };
     },
-    // 更新团队资产
-    updateFixedMoney(cid,re,result,judge){
-        print.log(re,result)
-        let fixed=Number(re.fixed)-(Number(result[0])+Number(result[1]));
-        let total=Number(re.total)-(Number(result[0])+Number(result[1]));
-        // 更新个人资产
-        req.post_Param('api/statistic',{
-            'judge':4,
-            'company_id':cid,
-            'fixed':fixed,
-            'total':total
-        })
-        .then(res => {
-            if(res.data){
-                $.notify(
-                    {message: `${re.company.name}->团队资产更新成功！减少${(Number(result[0])+Number(result[1])).toFixed(2)}w`},
-                    {type: "success"}
-                );
-                // 写入交易信息
-                req.post_Param('api/transaction',{
-                    'judge':1,
-                    'id':0,
-                    'Yearid':JSON.parse(ses.getSes('gameinfo')).Yearid,
-                    'inout':1,
-                    'type':4,
-                    'kind':3,
-                    'price':Number(result[0])+Number(result[1]),
-                    'number':1,
-                    'me':cid,
-                    'detail':`固定资产折旧：${Number(result[0])+Number(result[1])}`
-                })
-                this.init()
-                if(judge==1){
-                    swal("更新日程信息成功!", "参赛者资产信息更新成功", "success");
-                }
-            }else{
-                $.notify(
-                    {message: `${re.company.name}->资产更新失败！请检查！！`},
-                    {type: "warning"}
-                );
-                this.init()
+    // 判断队伍状态（迷路与否 适用 - 晴天、高温、沙尘暴使用⛺️、高温沙尘暴使用⛺️）
+    judgeTeamCondition(food , water , cteam){
+        if( cteam.lose >= 1){
+            let lose = cteam.lose - 1
+            // 更新迷路时间
+            apis.updateOneTeamLose(cteam.id , lose)
+            // 更新团队状态
+            if(food < 0 || water < 0){
+                apis.updateOneTeamCondition(cteam.id , -3) // 死亡
+                console.error('死亡',cteam)
             }
-        })        
+            else{
+                if(lose == 0 ) apis.updateOneTeamCondition(cteam.id , 0) // 正常
+                else apis.updateOneTeamCondition(cteam.id , -2) // 迷路
+            }
+        }else{
+            // 更新团队状态
+            if(food <=0 || water <=0){
+                apis.updateOneTeamCondition(cteam.id , -3) // 死亡
+                console.error('死亡',cteam)
+            }
+            else apis.updateOneTeamCondition(cteam.id , 0) // 正常
+        }
     }
   }
 };

@@ -48,7 +48,7 @@
                     <td v-if="item.module">{{item.module.type | formatModule}}</td><td v-else></td>
                     <td>{{item.price}}</td> 
                     <td>{{item.number}}</td>
-                    <td>{{item.condition}}</td>
+                    <td>{{item.condition | formatCondition}}</td>
                     <td>{{item.detail}}</td>
                     <td v-if="item.out">{{item.out.name}}</td><td v-else></td>
                     <td v-if="item.in">{{item.in.name}}</td><td v-else></td>
@@ -121,11 +121,18 @@ export default {
       if(x===2) return '金块兑换';
     },
     formatModule(x){
-      if(x===0) return '食物';
-      if(x===1) return '水';
-      if(x===2) return '帐篷';
-      if(x===3) return '智者密函';
-      if(x===4) return '金块';
+      if(x==-1) return '金币';
+      if(x==0) return '食物';
+      if(x==1) return '水';
+      if(x==2) return '指南针';
+      if(x==3) return '帐篷';
+      if(x==4) return '智者密函';
+      if(x==5) return '金块';
+    },
+    formatCondition(x){
+      if(x==-1) return '交易失败';
+      if(x==0) return '未完成';
+      if(x==1) return '交易完成';
     }
   },
   methods: {

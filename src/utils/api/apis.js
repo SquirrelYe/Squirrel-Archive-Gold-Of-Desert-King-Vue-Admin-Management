@@ -23,12 +23,14 @@ module.exports={
     // 交易信息
     getAllTransaction(){ return req.post_Param('api/ass/transaction',{'judge':0}) },
     getAllTransationByTeamId(id){ return req.post_Param('api/ass/transaction',{'judge':4, 'team_id':id}) },
+    addOneTran(g,t,m,o,p,n,mo,c,d){ return req.post_Param('api/ent/transaction', {'judge':1, 'game_id':g, 'type':t, 'me':m, 'other':o, 'price':p, 'number':n, 'module_id':mo, 'condition':c, 'detail':d}) },
     // 团队资产信息    
     getAllStatisticByGameId(id){ return req.post_Param('api/ass/statistic',{'judge':2, 'game_id':id}) },
     creatOneStatistic(gameid,teamid,money,load){ return req.post_Param('api/ent/statistic',{'judge':1, 'game_id':gameid, 'team_id':teamid, 'money':money,'load':load, 'food':0,'water':0 ,'compass':0,'tent':0,'secret':0,'gold':0})} ,
     deleteAllByStatisticGameId(gameid){ return req.post_Param('api/ent/statistic',{'judge':4, 'game_id':gameid}) },
     getOneStastisticById(id){ return req.post_Param('api/ent/statistic',{'judge':5, 'id':id}) },
     updateMoney(id, money){ return req.post_Param('api/ent/statistic',{'judge':3, 'id':id , 'money':money }) },
+    updateLoad(id, load){ return req.post_Param('api/ent/statistic',{'judge':3, 'id':id , 'load':load }) },
     findTeamStock(statistic_id){ return req.post_Param('api/ass/statistic_module',{'judge':4, 'statistic_id':statistic_id}) },
 
     findOrCreate(statistic_id,module_id,number,use){ return req.post_Param('api/ass/statistic_module',{'judge':1, 'statistic_id':statistic_id, 'module_id':module_id, 'number':number, 'use':use}) },

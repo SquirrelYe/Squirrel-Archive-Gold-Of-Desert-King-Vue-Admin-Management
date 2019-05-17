@@ -27,12 +27,12 @@
                     <th>团队名称</th>
                     <th>可用资金</th>
                     <th>剩余载重</th>
-                    <th>食物</th>
+                    <!-- <th>食物</th>
                     <th>水</th>
                     <th>指南针</th>
                     <th>帐篷</th>
                     <th>智者密函</th>
-                    <th>金块</th>
+                    <th>金块</th> -->
                     <th>更新时间</th>
                   </tr>
                 </thead>
@@ -42,12 +42,12 @@
                     <td v-if="item.team">{{item.team.name}}</td>  <td v-else></td>
                     <td>{{item.money}}</td>
                     <td>{{item.load}}</td>
-                    <td>{{item.food}}</td>
+                    <!-- <td>{{item.food}}</td>
                     <td>{{item.water}}</td>
                     <td>{{item.compass}}</td>
                     <td>{{item.tent}}</td>
                     <td>{{item.secret}}</td>
-                    <td>{{item.gold}}</td>
+                    <td>{{item.gold}}</td> -->
                     <td>{{item.updated_at|formatTime}}</td>
                   </tr>
                 </tbody>
