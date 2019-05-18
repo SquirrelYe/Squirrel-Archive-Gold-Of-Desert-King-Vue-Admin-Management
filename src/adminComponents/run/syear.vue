@@ -409,7 +409,8 @@ export default {
                             apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-食物')
                         }
                         if(e.type == 1) {
-                            water = e.statistic_module.number - 1  // 晴天消耗 一个水
+                            water = e.statistic
+                            _module.number - 1  // 晴天消耗 一个水
                             apis.updateFoodWaternumber(e.statistic_module.id , water)
                             apis.addOneTran(this.gid ,-1 ,cteam.id ,cteam.id,0,1, e.id,1,'组委会：天气扣除-水')
                         }

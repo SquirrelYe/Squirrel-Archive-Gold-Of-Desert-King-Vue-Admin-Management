@@ -27,13 +27,14 @@
                     <th>团队名称</th>
                     <th>可用资金</th>
                     <th>剩余载重</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
                     <!-- <th>食物</th>
                     <th>水</th>
                     <th>指南针</th>
                     <th>帐篷</th>
                     <th>智者密函</th>
                     <th>金块</th> -->
-                    <th>更新时间</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -42,13 +43,18 @@
                     <td v-if="item.team">{{item.team.name}}</td>  <td v-else></td>
                     <td>{{item.money}}</td>
                     <td>{{item.load}}</td>
+                    <td>{{item.updated_at|formatTime}}</td>
+                    <td>
+                      <a @click="showItem(item)" data-toggle="modal" data-target="#Model">
+                        <i class="fa  fa-navicon" data-toggle="tooltip" data-placement="top" title="查看背包详细信息"></i>
+                      </a>
+                    </td>
                     <!-- <td>{{item.food}}</td>
                     <td>{{item.water}}</td>
                     <td>{{item.compass}}</td>
                     <td>{{item.tent}}</td>
                     <td>{{item.secret}}</td>
                     <td>{{item.gold}}</td> -->
-                    <td>{{item.updated_at|formatTime}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -101,6 +107,54 @@
       </div>
     </div>
 
+    <div id="Model" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="custom-width-modalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="width:55%">
+          <div class="modal-content">
+          <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h4 class="modal-title" id="myModalLabel">背包详细信息</h4>
+          </div>
+            <div class="modal-body" align='center'>
+              <div class="row">
+                <div class="col-sm-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                          <!-- 子类 -->                          
+                          <div class="table-responsive">
+                            <table  class="table table-bordered table-striped table-hover" id="datatable-editable">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>物品ID</th>
+                                  <th>中间表ID</th>
+                                  <th>名称</th>
+                                  <th>数量</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr class="gradeX" v-for="(item,index) in currentItem" :key="index">
+                                  <td>{{index+1}}</td>
+                                  <td>M-{{item.id}}</td>
+                                  <td>SM-{{item.statistic_module.id}}</td>
+                                  <td>{{item.type | formatType}}</td>
+                                  <td>{{item.statistic_module.number}}</td>                                  
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>                            
+                        </div>
+                    </div>
+                </div>
+            </div>         
+          </div>
+
+          <div class="modal-footer">
+          <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -119,6 +173,7 @@ export default {
   data() {
     return {
       showItems:null,
+      currentItem:null,
 
       // 初始化资产
       money:100,
@@ -134,7 +189,16 @@ export default {
   filters:{
     formatTime(x) {
       return moment(x).format("YYYY-MM-DD HH:mm:ss");
-    }
+    },
+    formatType(x){
+        if(x==-1) return '金币';
+        if(x==0) return '食物';
+        if(x==1) return '水';
+        if(x==2) return '指南针';
+        if(x==3) return '帐篷';
+        if(x==4) return '智者密函';
+        if(x==5) return '金块';
+    },
   },
   methods: {
     init(){
@@ -180,7 +244,9 @@ export default {
           }
         })
       }
-    }
+    },
+    // 显示背包详细信息
+    showItem(item){ this.currentItem = item.modules }
   }
 };
 </script>

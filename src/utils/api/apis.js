@@ -9,6 +9,10 @@ module.exports={
     updateOneGameDayById(id,day){ return req.post_Param('/api/ent/game',{'judge':3,'id':id, 'day_id':day}) },
     getAllThing(){ return req.post_Param('api/ent/module',{'judge':0}) },
     updateGameJudgeWhetherById(id,j){ return req.post_Param('/api/ent/game',{'judge':3,'id':id, 'judgewhether':j}) },
+    getWeather(){ return req.post_Param('/api/ent/day',{'judge':0 }) },
+    getMap() { return req.post_Param('/api/ent/map', { 'judge':0 }) },
+    editWeather(id,d,o,v,g,t) { return req.post_Param('/api/ent/day', { 'judge':3 ,'id':id,'whether_desert':d,'whether_oasis':o,'whether_village':v,'whether_gold':g,'whether_tomb':t }) },
+    editMap(id,land) { return req.post_Param('/api/ent/map', { 'judge':3,'id':id,'land':land }) },
     // 参赛者信息
     getAllUserByType(type){ return req.post_Param('/api/ass/user',{'judge':2,'type':type}) },
     getOneUserById(id){ return req.post_Param('/api/ass/user',{'judge':3,'user_id':id}) },
