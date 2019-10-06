@@ -67,8 +67,8 @@
                   <li class="paginate_button previous" :class="{ disabled: currentPage=='0' }">
                     <a href="javascript:void(0)" @click="previousPage()">上一页</a>
                   </li>
-                  <li class="paginate_button" v-for="(item,index) in sumPage" :key="index" :class="{ active: currentPage==index }" >
-                    <a href="javascript:void(0)" @click="switchPage(index)">{{++index}}</a>
+                  <li class="paginate_button active">
+                    <a href="javascript:void(0)" @click="switchPage(index)">{{Number(currentPage)+1}}</a>
                   </li>
                   <li class="paginate_button next" :class="{ disabled: currentPage==sumPage-1 }">
                     <a href="javascript:void(0)" @click="nextPage()">下一页</a>

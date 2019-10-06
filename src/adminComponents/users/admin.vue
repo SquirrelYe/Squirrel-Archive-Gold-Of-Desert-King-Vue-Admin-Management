@@ -27,7 +27,6 @@
                       <tr>
                         <th>#</th>
                         <th>管理员ID</th>
-                        <th>中文名</th>
                         <th>用户名</th>
                         <th>密码</th>
                         <th>邮箱</th>
@@ -40,7 +39,6 @@
                       <tr class="gradeX" v-for="(item,index) in showItems" :key="index">
                         <td>{{index}}</td>
                         <td>{{item.id}}</td>
-                        <td>{{item.cname}}</td>
                         <td>{{item.name}}</td>
                         <td>{{item.pass}}</td>
                         <td>{{item.mail}}</td>

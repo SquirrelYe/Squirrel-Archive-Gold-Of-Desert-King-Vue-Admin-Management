@@ -121,6 +121,15 @@
                                 <input type="number" class="form-control"  v-model="number"  placeholder="0" >
                             </div>
                         </div>
+                        <div class="form-group">     
+                            <label class="col-sm-2 control-label">计重:</label>                       
+                            <div class="col-md-9">
+                                <select class="form-control" v-model="isWeight">
+                                    <option value="0">计重</option>
+                                    <option value="1">免重</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">备注:</label>
                             <div class="col-sm-9">
@@ -135,7 +144,7 @@
                 </div>
                 <div class="modal-footer">
                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal" @click="updateStatistics()">确认更改</button>
+                <button type="button" class="btn btn-primary waves-effect waves-light" data-dismiss="modal" @click="updateStatistics()">确认发送</button>
                 </div>
             </div>
         </div>
@@ -144,6 +153,7 @@
 </template>
 
 <script>
+import { now } from 'moment';
 const s_alert = require("../../utils/alert");
 const ses = require("../../utils/ses");
 const req = require("../../utils/axios");
@@ -167,6 +177,7 @@ export default {
         thing:null,
         number:0,
         detail:null,
+        isWeight:0,   // 0.计重 1.免重
 
         // 计算折旧
         diggerDeprelief:[],
@@ -234,15 +245,48 @@ export default {
         this.currentStastics=model
     },
     // 更改资产
-    updateStatistics(){
-        print.log(this.thing,this.number,this.detail)
+    async updateStatistics(){
+        print.log(this.thing,this.number,this.isWeight,this.detail)
         let team = this.currentStastics
+        if(this.number == 0){
+            s_alert.basic('数量不能为零');
+            return;
+        }
+        if(this.isWeight == 0){
+            // -1金币、4智者密函 无重量
+            if(this.thing == -1 || this.thing == 4);
+            // 重量记录
+            // 1水 50，2指南针 10，3帐篷 60，5金块 50 ，6食物 10
+            else{
+                let me = await apis.getOneTeamById(this.currentStastics.id);
+                let staid = me.data.statistic.id;
+                let load = me.data.statistic.load;
+                // 更新载重
+                let useload;
+                switch(+this.thing){
+                    case 1: useload = this.number * 50; break;
+                    case 2: useload = this.number * 10; break;
+                    case 3: useload = this.number * 60; break;
+                    case 5: useload = this.number * 50; break;
+                    case 6: useload = this.number * 10; break;
+                }
+                let nowload = load - useload;
+                console.log(load,useload,nowload);
+                if(nowload < 0){
+                    s_alert.basic('可用载重不足');
+                    return;
+                }
+                await apis.updateLoad(staid,nowload);
+            }
+        }
         // findOrCreate
+        // 物品为 帐篷⛺️ （use）
         if(this.thing == 3){
             apis.findOrCreate(team.statistic_id,this.thing,this.number,this.number * 3)
             .then(res=>{
                 console.log(res.data)
                 if(res.data[1]){
+                    apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,this.number, this.thing,1,'组委会操作'+this.detail)
                     s_alert.Success('团队资产信息更新成功','','success')
                     this.init()
                 }else{
@@ -254,13 +298,15 @@ export default {
                     apis.update_number(id, team.statistic_id, this.thing, number, use)
                     .then(res=>{
                         console.log(res.data)
-                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作')
+                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作'+this.detail)
                         s_alert.Success('团队资产信息更新成功','','success')
                         this.init()
                     })
                 }
             })
-        }else if( this.thing == -1){
+        }
+        // 物品为 金币
+        else if( this.thing == -1){
             apis.getOneStastisticById(team.statistic_id)
             .then(res=>{
                 console.log(res.data)
@@ -269,16 +315,19 @@ export default {
                 apis.updateMoney(team.statistic_id , number)
                 .then(res=>{
                     console.log(res.data)
-                    apis.addOneTran(this.gid ,-1 ,team.id ,team.id,onumber,1, this.thing,1,'组委会操作')
+                    apis.addOneTran(this.gid ,-1 ,team.id ,team.id,onumber,1, this.thing,1,'组委会操作'+this.detail)
                     s_alert.Success('团队资产信息更新成功','','success')
                     this.init()
                 })
             })
-        }else {
+        }
+        // 其他物品
+        else {
             apis.findOrCreate(team.statistic_id,this.thing,this.number,0)
             .then(res=>{
                 console.log(res.data)
                 if(res.data[1]){
+                    apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,this.number, this.thing,1,'组委会操作'+this.detail)
                     s_alert.Success('团队资产信息更新成功','','success')
                     this.init()
                 }else{
@@ -290,7 +339,7 @@ export default {
                     apis.update_number(id, team.statistic_id, this.thing, number, use)
                     .then(res=>{
                         console.log(res.data)
-                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作')
+                        apis.addOneTran(this.gid ,-1 ,team.id ,team.id,0,onumber, this.thing,1,'组委会操作'+this.detail)
                         s_alert.Success('团队资产信息更新成功','','success')
                         this.init()
                     })

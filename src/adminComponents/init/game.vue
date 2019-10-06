@@ -21,21 +21,6 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a href="javascript:void(0)">
-                                            <i class="md md-face-unlock"></i> 个人简介
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="md md-settings"></i> 设置
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="md md-lock"></i> 锁屏
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
                                             <i class="md md-settings-power"></i> 注销
                                         </a>
                                     </li>
@@ -57,7 +42,8 @@
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12">
                         <div class="portfolioFilter">
-                            <a href="javascript:void(0)" :class="{'current' : condition==-1}" @click="getGame(-1)">所有赛事</a>
+                            <a href="javascript:void(0)" :class="{'current' : condition==-2}" @click="getGame(-2)">所有赛事</a>
+                            <a href="javascript:void(0)" :class="{'current' : condition==-1}" @click="getGame(-1)">暂停</a>
                             <a href="javascript:void(0)" :class="{'current' : condition==0}" @click="getGame(0)">未开始</a>
                             <a href="javascript:void(0)" :class="{'current' : condition==1}" @click="getGame(1)">正在进行</a>
                             <a href="javascript:void(0)" :class="{'current' : condition==2}" @click="getGame(2)">已结束</a>
@@ -108,60 +94,45 @@ export default {
         return {
             icon_src:"static/images/users/avatar-6.jpg",
             items:null,
-            condition:-1
+            condition:-2
         };
     },
-    beforeRouteEnter (to, from, next) {
-        console.log('beforeRouteEnter')
-        next()
-    },
-    mounted() {
-        this.init();
-    },
-    updated() {
-        $(function() { $("[data-toggle='tooltip']").tooltip(); });
-    },
+    mounted() { this.init(); },
+    updated() { $(function() { $("[data-toggle='tooltip']").tooltip(); }); },
     filters: {
         formatTime(val) {
             return moment(val).format("YYYY-MM-DD HH:mm:ss");
         },
         formatCondition(x){
+            // 状况（-1.暂停、0.未开始、1.开始、2.结束）
+            if(x==-1) return '比赛暂停';
             if(x==0) return '比赛未开始';
             if(x==1) return '比赛正在进行';
             if(x==2) return '比赛已结束';
         }
     },
     methods: {
-        init() {
-            this.getAllGame();
-        },
-        // 获取所有公司列表
-        getAllGame() {
-            apis.getAllGame().then(res => {
-                print.log("获取到 赛事列表信息", res.data);
-                this.items = res.data.rows;
-            });
+        init() { this.getAllGame(); },
+        // 获取所有比赛列表
+        async getAllGame() {
+            let res = await apis.getAllGame();
+            print.log("获取到 赛事列表信息", res.data);
+            this.items = res.data.rows;
         },
         // 选择赛事
-        chooseGame(item){
+        async chooseGame(item){
             print.log('选择赛事',item)
-            if(item.condition==0 || item.condition==2){
-                s_alert.Success("赛事未开始或已结束。","请重新选择……","warning");
-            }else{
-                apis.getOneGameById(item.id)
-                .then(res=>{
-                    ses.setSessionStorage('gameinfo',JSON.stringify(res.data))
-                    s_alert.Success(`加入成功，赛事：${item.name}`,"2秒后自动跳转到赛事界面……","success");
-                    setTimeout(() => {                        
-                        this.$router.push({name:'menu'});
-                    }, 2000);
-                })
-            }
+            let res = await apis.getOneGameById(item.id);
+            ses.setSessionStorage('gameinfo',JSON.stringify(res.data))
+            s_alert.Success(`加入成功，赛事：${item.name}`,"2秒后自动跳转到赛事界面……","success");
+            setTimeout(() => {                        
+                this.$router.push({name:'menu'});
+            }, 2000);
         },
         // 选择不同状态赛事
         getGame(index){
             this.condition=index;
-            if(index==-1) this.getAllGame();
+            if(index==-2) this.getAllGame();
             else apis.getGameByCondition(index).then(res=>{ this.items = res.data.rows; })
         }
     }

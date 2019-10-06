@@ -73,10 +73,10 @@
                   </table>
                 </div>
                 <div class="row">
-                  <div class="col-sm-6">
+                  <div class="col-sm-4">
                     <div class="dataTables_info float-left" id="datatable-editable_info" role="status" aria-live="polite" >展示 {{PageShowSum}} 总共 {{items.length}} 项</div>
                   </div>
-                  <div class="col-sm-6">
+                  <div class="col-sm-8">
                     <div class="dataTables_paginate paging_simple_numbers" id="datatable-editable_paginate" >
                       <ul class="pagination" style="float:right">
                         <li class="paginate_button previous" :class="{ disabled: currentPage=='0' }">
@@ -193,9 +193,9 @@
                             </table>
                           </div> 
                           <div class="row" v-if="judge == 1">
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-8">
                               <div class="dataTables_paginate paging_simple_numbers" id="datatable-editable_paginate" >
                                 <ul class="pagination" style="float:right">
                                   <li class="paginate_button previous" :class="{ disabled: mcurrentPage=='0' }">
@@ -352,6 +352,7 @@ export default {
       return moment(x).format('YYYY-MM-DD HH:mm:ss')
     },
     formatCondition(x){
+      if(x==-1) return '比赛已暂停';
       if(x==0) return '比赛未开始';
       if(x==1) return '比赛正在进行';
       if(x==2) return '比赛已结束';
@@ -466,7 +467,7 @@ export default {
     startGame(item){
       apis.updateOneGameById(item.id,1)
       .then(res => {
-        if(res.data.affectRows[0] === 1){
+        if(res.data[0] === 1){
             this.init()
             s_alert.Success("比赛开始成功!", "成功开始了一场比赛", "success");
           }else{
@@ -477,13 +478,22 @@ export default {
     },
     // 暂停比赛
     pauseGame(item){
-
+        apis.updateOneGameById(item.id,-1)
+        .then(res => {
+            if(res.data[0] === 1){
+                this.init()
+                s_alert.Success("比赛暂停成功!", "成功暂停了一场比赛", "success");
+            }else{
+                this.init()
+                s_alert.Success("暂停失败!", "请检查", "warning");
+            }
+        })
     },
     // 结束比赛
     stopGame(item){
       apis.updateOneGameById(item.id,2)
       .then(res => {
-        if(res.data.affectRows[0] === 1){
+        if(res.data[0] === 1){
             this.init()
             s_alert.Success("比赛已结束!", "成功结束了一场比赛", "success");
           }else{

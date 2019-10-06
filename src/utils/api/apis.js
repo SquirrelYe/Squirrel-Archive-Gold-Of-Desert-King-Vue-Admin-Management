@@ -16,14 +16,15 @@ module.exports={
     // 参赛者信息
     getAllUserByType(type){ return req.post_Param('/api/ass/user',{'judge':2,'type':type}) },
     getOneUserById(id){ return req.post_Param('/api/ass/user',{'judge':3,'user_id':id}) },
-    delOneUserById(id){ return req.post_Param('/api/ent/user',{'judge':3,'id':id}) },
+    delOneUserById(id){ return req.post_Param('/api/ent/user',{'judge':2,'id':id}) },
     // 团队信息
     getAllTeam(){ return req.post_Param('/api/ass/team',{'judge':2}) },
     getAllTeamByGameId(game_id){ return req.post_Param('/api/ass/team',{'judge':4,'game_id':game_id}) },
-    getOneTeamById(id){ return req.post_Param('/api/ass/team',{'judge':3,'team_id':id}) },
+    getOneTeamById(id){ return req.post_Param('/api/ass/team',{'judge':3,'id':id}) },
     delOneTeamById(id){ return req.post_Param('/api/ent/team',{'judge':2,'id':id}) },
     updateOneTeamCondition(id,c){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'condition':c }) },
     updateOneTeamLose(id,l){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'lose':l }) },
+    updateOneTeamStatistic(id,sid,lose,dig){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'statistic_id':sid,'lose':lose,'isDig':dig }) },
     // 交易信息
     getAllTransaction(){ return req.post_Param('api/ass/transaction',{'judge':0}) },
     getAllTransationByTeamId(id){ return req.post_Param('api/ass/transaction',{'judge':4, 'team_id':id}) },

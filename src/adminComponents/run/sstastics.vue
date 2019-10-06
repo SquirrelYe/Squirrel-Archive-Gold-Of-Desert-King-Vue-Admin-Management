@@ -29,12 +29,6 @@
                     <th>剩余载重</th>
                     <th>更新时间</th>
                     <th>操作</th>
-                    <!-- <th>食物</th>
-                    <th>水</th>
-                    <th>指南针</th>
-                    <th>帐篷</th>
-                    <th>智者密函</th>
-                    <th>金块</th> -->
                   </tr>
                 </thead>
                 <tbody>
@@ -49,12 +43,6 @@
                         <i class="fa  fa-navicon" data-toggle="tooltip" data-placement="top" title="查看背包详细信息"></i>
                       </a>
                     </td>
-                    <!-- <td>{{item.food}}</td>
-                    <td>{{item.water}}</td>
-                    <td>{{item.compass}}</td>
-                    <td>{{item.tent}}</td>
-                    <td>{{item.secret}}</td>
-                    <td>{{item.gold}}</td> -->
                   </tr>
                 </tbody>
               </table>
@@ -198,6 +186,7 @@ export default {
         if(x==3) return '帐篷';
         if(x==4) return '智者密函';
         if(x==5) return '金块';
+        if(x==6) return '食物';
     },
   },
   methods: {
@@ -213,22 +202,21 @@ export default {
       })
     },
     // 初始化参赛者团队资产信息
-    initStastics(){
-      apis.getAllTeam()
-      .then(res=>{
+    async initStastics(){
+        let res = await apis.getAllTeam();
         print.log('所有的团队信息->',res.data.rows)
         for (let i = 0; i < res.data.rows.length; i++) {
-          const e = res.data.rows[i];
-          apis.creatOneStatistic(e.game_id,e.id,this.money,this.load)
-          .then(msg=>{
+            const e = res.data.rows[i];
+            // 创建资产信息  
+            let msg = await apis.creatOneStatistic(e.game_id,e.id,this.money,this.load);
             print.log(msg.data)
+            // 更新team 对应信息
+            await apis.updateOneTeamStatistic(e.id,msg.data.id,0,0);
             if(i==res.data.rows.length-1){
-              this.init()
-              s_alert.Success("参赛团队资产初始化成功!", `你成功初始化了${res.data.rows.length}个参赛团队资产信息！`, "success");              
+                this.init()
+                s_alert.Success("参赛团队资产初始化成功!", `你成功初始化了${res.data.rows.length}个参赛团队资产信息！`, "success");              
             }
-          })
         }
-      })
     },
     // 删除所有团队资产信息
     deleteAll(){

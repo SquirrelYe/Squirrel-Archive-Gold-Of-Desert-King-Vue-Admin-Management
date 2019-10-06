@@ -28,7 +28,6 @@
                         <th>团队ID</th>
                         <th>团队名称</th>
                         <th>状态</th>
-                        <th>所属赛事</th>
                         <th>创建时间</th>
                         <th>操作</th>
                       </tr>
@@ -39,11 +38,10 @@
                         <td>{{item.id}}</td>
                         <td>{{item.name}}</td>
                         <td>{{item.condition|formatCondition}}</td>
-                        <td v-if="item.game">{{item.game.name}}</td>
                         <td>{{item.created_at|formatTime}}</td>
                         <td class="actions" align='center'>
                           <a class="on-default remove-row" @click="isDeleteItem(item)">
-                            <i class="fa fa-trash-o" data-toggle="tooltip" data-placement="top" title="删除公司"></i>
+                            <i class="fa fa-trash-o" data-toggle="tooltip" data-placement="top" title="删除团队"></i>
                           </a>
                         </td>
                       </tr>
@@ -105,10 +103,13 @@ export default {
       return moment(x).format('YYYY-MM-DD HH:mm:ss')
     },
     formatCondition(x){
+        // 小组状态（0.正常、-1.冻结、-2.迷路、-3.死亡、1.使用帐篷、2.使用指南针）
       if(x==0) return '正常';
       if(x==-1) return '冻结';
       if(x==-2) return '迷路';
       if(x==-3) return '死亡';
+      if(x==1) return '使用帐篷中';
+      if(x==2) return '使用指南针中';
     }
   },
   mounted() {
@@ -139,9 +140,7 @@ export default {
       let that=this
       if(confirm('确定删除吗')){
         that.DeleteItem(item)
-      }else{
-
-      }      
+      }     
     },    
     DeleteItem(del){
       apis.delOneTeamById(del.id)
