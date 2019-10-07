@@ -35,21 +35,6 @@
                     <img :src="icon_src" alt="user-img" class="img-circle">
                   </a>
                   <ul class="dropdown-menu">
-                    <li>
-                      <a href="javascript:void(0)">
-                        <i class="md md-face-unlock"></i> 个人简介
-                      </a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)">
-                        <i class="md md-settings"></i> 设置
-                      </a>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)">
-                        <i class="md md-lock"></i> 锁屏
-                      </a>
-                    </li>
                     <li  @click="logout">
                       <a href="javascript:void(0)">
                         <i class="md md-settings-power"></i> 注销
