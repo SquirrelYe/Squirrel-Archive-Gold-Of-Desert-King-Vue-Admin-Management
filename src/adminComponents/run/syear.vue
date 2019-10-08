@@ -439,8 +439,19 @@ export default {
             let filterTeams = []; // 过滤已经死亡的队伍
             let res = await apis.getAllTeamByGameId(JSON.parse(ses.getSessionStorage("gameinfo")).id)
             team = res.data.rows
+            // 第一天不统计消耗信息
+            console.log(game.day.day)
+            if(game.day.day == 1){
+                await apis.updateOneGameDayById(this.gid, this.day_id + 1);
+                let day = await apis.updateGameJudgeWhetherById(this.gid, 0);
+                if (day.data[0] == 1) {
+                    s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
+                    this.init()
+                    return;
+                }
+            }
             //  判断能否进入下一天（默认时间为1 ，时间最大26，所有人必须位于当前日期）
-            if (game.day.day < 26) {
+            if (game.day.day <= 26) {
                 if (item.judgewhether == 0) {
                     s_alert.Warning('请先开启天气显示 ', '未开启天气显示，参赛人员无法操作');
                     return;
@@ -494,21 +505,21 @@ export default {
                 console.log('获取背包信息->', res.data)
                 // 循环计算扣除信息
                 let food, water;
-                // 状态一 *********************************************************（晴天）
-                if (cwhether == 0) {
-                    let load = Number(res.data.load) + Number(60) // (1食物 1水 10+50)
+                // 判断是否已经迷路（已经迷路的 消耗 10食物 5水）
+                if(condition == -2){
+                    let load = Number(res.data.load) + Number(350) // (10食物 5水 10*10 + 5*50)
                     // 计算消耗
                     for (let i = 0; i < res.data.modules.length; i++) {
                         const e = res.data.modules[i];
                         if (e.type == 0) {
-                            food = e.statistic_module.number - 1 // 晴天消耗 1食物
+                            food = e.statistic_module.number - 10 // 迷路消耗 10食物
                             await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
+                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 10, e.id, 1, '组委会：天气扣除迷路-食物')
                         }
                         if (e.type == 1) {
-                            water = e.statistic_module.number - 1 // 晴天消耗 1水
+                            water = e.statistic_module.number - 5 // 迷路消耗 5水
                             await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-水')
+                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除迷路-水')
                         }
                     }
                     console.log('计算消耗的剩余食物和水', food, water)
@@ -517,121 +528,43 @@ export default {
                     judge++
                     console.log(judge)
                 }
-                // 状态二 *********************************************************（高温）
-                else if (cwhether == 1) {
-                    let load = Number(res.data.load) + Number(160) // (1食物 3水 10+3*50)
-                    for (let i = 0; i < res.data.modules.length; i++) {
-                        const e = res.data.modules[i];
-                        if (e.type == 0) {
-                            food = e.statistic_module.number - 1 // 高温消耗 1个食物
-                            await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
-                        }
-                        if (e.type == 1) {
-                            water = e.statistic_module.number - 3 // 高温消耗 3个水
-                            await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 3, e.id, 1, '组委会：天气扣除-水')
-                        }
-                    }
-                    console.log('计算消耗的剩余食物和水', food, water)
-                    await apis.updateLoad(res.data.id, load)
-                    this.judgeTeamCondition(food, water, cteam)
-                    judge++
-                    console.log(judge)
-                }
-                // 状态三 *********************************************************（沙尘暴）
-                else if (cwhether == 2) {
-                    // 使用帐篷⛺️
-                    if (condition == 1) {
+                // 当前为迷路，执行不同逻辑
+                else{
+                    // 状态一 *********************************************************（晴天）
+                    if (cwhether == 0) {
                         let load = Number(res.data.load) + Number(60) // (1食物 1水 10+50)
+                        // 计算消耗
                         for (let i = 0; i < res.data.modules.length; i++) {
                             const e = res.data.modules[i];
                             if (e.type == 0) {
-                                food = e.statistic_module.number - 1 // 沙尘暴⛺️消耗 1个食物
+                                food = e.statistic_module.number - 1 // 晴天消耗 1食物
                                 await apis.updateFoodWaternumber(e.statistic_module.id, food)
                                 await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
                             }
                             if (e.type == 1) {
-                                water = e.statistic_module.number - 1 // 沙尘暴⛺️消耗 1个水
+                                water = e.statistic_module.number - 1 // 晴天消耗 1水
                                 await apis.updateFoodWaternumber(e.statistic_module.id, water)
                                 await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-水')
                             }
                         }
                         console.log('计算消耗的剩余食物和水', food, water)
-                        await apis.updateLoad(res.data.id, load)
+                        await apis.updateLoad(res.data.id, load);
                         this.judgeTeamCondition(food, water, cteam)
                         judge++
                         console.log(judge)
                     }
-                    // 使用指南针
-                    else if (condition == 2) {
-                        let load = Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
-                        for (let i = 0; i < res.data.modules.length; i++) {
-                            const e = res.data.modules[i];
-                            if (e.type == 0) {
-                                food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
-                                await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
-                            }
-                            if (e.type == 1) {
-                                water = e.statistic_module.number - 2 // 沙尘暴无⛺️ 消耗 2个水
-                                await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 2, e.id, 1, '组委会：天气扣除-水')
-                            }
-                        }
-                        console.log('计算消耗的剩余食物和水', food, water)
-                        await apis.updateLoad(res.data.id, load)
-                        this.judgeTeamCondition(food, water, cteam)
-                        judge++
-                        console.log(judge)
-                    }
-                    // 既不使用 帐篷 也不使用 指南针
-                    else {
-                        let load = Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
-                        for (let i = 0; i < res.data.modules.length; i++) {
-                            const e = res.data.modules[i];
-                            if (e.type == 0) {
-                                food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
-                                await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
-                            }
-                            if (e.type == 1) {
-                                water = e.statistic_module.number - 2 // 沙尘暴无⛺️ 消耗 2个水
-                                apis.updateFoodWaternumber(e.statistic_module.id, water)
-                                apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 2, e.id, 1, '组委会：天气扣除-水')
-                            }
-                        }
-                        console.log('计算消耗的剩余食物和水', food, water)
-                        await apis.updateLoad(res.data.id, load)
-                        // 更新迷路时间
-                        await apis.updateOneTeamLose(cteam.id, 3)
-                        // 更新团队状态
-                        if (food < 0 || water < 0) {
-                            await apis.updateOneTeamCondition(cteam.id, -3) // 死亡
-                            console.error('死亡', cteam)
-                            this.toast(`${cteam.name}_死亡`, 'warning');
-                        } else {
-                            await apis.updateOneTeamCondition(cteam.id, -2) // 迷路
-                            this.toast(`${cteam.name}_迷路`, 'warning');
-                        }
-                        judge++
-                        console.log(judge)
-                    }
-                }
-                // 状态四 *********************************************************（高温沙尘暴）
-                else if (cwhether == 3) {
-                    // 判断是否使用帐篷⛺️
-                    if (condition == 1) {
+                    // 状态二 *********************************************************（高温）
+                    else if (cwhether == 1) {
                         let load = Number(res.data.load) + Number(160) // (1食物 3水 10+3*50)
                         for (let i = 0; i < res.data.modules.length; i++) {
                             const e = res.data.modules[i];
                             if (e.type == 0) {
-                                food = e.statistic_module.number - 1 // 沙尘暴⛺️ 消耗 1个食物
+                                food = e.statistic_module.number - 1 // 高温消耗 1个食物
                                 await apis.updateFoodWaternumber(e.statistic_module.id, food)
                                 await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
                             }
                             if (e.type == 1) {
-                                water = e.statistic_module.number - 3 // 沙尘暴⛺️ 消耗 3个水
+                                water = e.statistic_module.number - 3 // 高温消耗 3个水
                                 await apis.updateFoodWaternumber(e.statistic_module.id, water)
                                 await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 3, e.id, 1, '组委会：天气扣除-水')
                             }
@@ -641,59 +574,163 @@ export default {
                         this.judgeTeamCondition(food, water, cteam)
                         judge++
                         console.log(judge)
-                    } else if (condition == 2) {
-                        let load = Number(res.data.load) + Number(250) //  (5食物 4水 5*10+4*50)
-                        for (let i = 0; i < res.data.modules.length; i++) {
-                            const e = res.data.modules[i];
-                            if (e.type == 0) {
-                                food = e.statistic_module.number - 5 // 沙尘暴⛺️ 消耗 5个食物
-                                await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                    }
+                    // 状态三 *********************************************************（沙尘暴）
+                    else if (cwhether == 2) {
+                        // 使用帐篷⛺️
+                        if (condition == 1) {
+                            let load = Number(res.data.load) + Number(60) // (1食物 1水 10+50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 1 // 沙尘暴⛺️消耗 1个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 1 // 沙尘暴⛺️消耗 1个水
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-水')
+                                }
                             }
-                            if (e.type == 1) {
-                                water = e.statistic_module.number - 4 // 沙尘暴⛺️ 消耗 4个水
-                                await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 4, e.id, 1, '组委会：天气扣除-水')
-                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            this.judgeTeamCondition(food, water, cteam)
+                            judge++
+                            console.log(judge)
                         }
-                        console.log('计算消耗的剩余食物和水', food, water)
-                        await apis.updateLoad(res.data.id, load)
-                        this.judgeTeamCondition(food, water, cteam)
-                        judge++
-                        console.log(judge)
-                    } else {
-                        let load = Number(res.data.load) + Number(250) // (5食物 4水 5*10+4*50)
-                        for (let i = 0; i < res.data.modules.length; i++) {
-                            const e = res.data.modules[i];
-                            if (e.type == 0) {
-                                food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
-                                await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                        // 使用指南针
+                        else if (condition == 2) {
+                            let load = Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 2 // 沙尘暴无⛺️ 消耗 2个水
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 2, e.id, 1, '组委会：天气扣除-水')
+                                }
                             }
-                            if (e.type == 1) {
-                                water = e.statistic_module.number - 4 // 沙尘暴无⛺️ 消耗 4个水
-                                await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                                await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 4, e.id, 1, '组委会：天气扣除-水')
-                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            this.judgeTeamCondition(food, water, cteam)
+                            judge++
+                            console.log(judge)
                         }
-                        console.log('计算消耗的剩余食物和水', food, water)
-                        await apis.updateLoad(res.data.id, load)
-                        // 更新迷路时间
-                        await apis.updateOneTeamLose(cteam.id, 3)
-                        // 更新团队状态
-                        if (food < 0 || water < 0) {
-                            await apis.updateOneTeamCondition(cteam.id, -3) // 死亡
-                            console.error('死亡', cteam)
-                            this.toast(`${cteam.name}_死亡`, 'warning');
+                        // 既不使用 帐篷 也不使用 指南针
+                        else {
+                            let load = Number(res.data.load) + Number(150) // (5食物 2水 5*10+2*50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 2 // 沙尘暴无⛺️ 消耗 2个水
+                                    apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 2, e.id, 1, '组委会：天气扣除-水')
+                                }
+                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            // 更新迷路时间
+                            await apis.updateOneTeamLose(cteam.id, 3)
+                            // 更新团队状态
+                            if (food < 0 || water < 0) {
+                                await apis.updateOneTeamCondition(cteam.id, -3) // 死亡
+                                console.error('死亡', cteam)
+                                this.toast(`${cteam.name}_死亡`, 'warning');
+                            } else {
+                                await apis.updateOneTeamCondition(cteam.id, -2) // 迷路
+                                this.toast(`${cteam.name}_迷路`, 'warning');
+                            }
+                            judge++
+                            console.log(judge)
+                        }
+                    }
+                    // 状态四 *********************************************************（高温沙尘暴）
+                    else if (cwhether == 3) {
+                        // 判断是否使用帐篷⛺️
+                        if (condition == 1) {
+                            let load = Number(res.data.load) + Number(160) // (1食物 3水 10+3*50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 1 // 沙尘暴⛺️ 消耗 1个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 1, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 3 // 沙尘暴⛺️ 消耗 3个水
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 3, e.id, 1, '组委会：天气扣除-水')
+                                }
+                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            this.judgeTeamCondition(food, water, cteam)
+                            judge++
+                            console.log(judge)
+                        } else if (condition == 2) {
+                            let load = Number(res.data.load) + Number(250) //  (5食物 4水 5*10+4*50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 5 // 沙尘暴⛺️ 消耗 5个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 4 // 沙尘暴⛺️ 消耗 4个水
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 4, e.id, 1, '组委会：天气扣除-水')
+                                }
+                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            this.judgeTeamCondition(food, water, cteam)
+                            judge++
+                            console.log(judge)
                         } else {
-                            await apis.updateOneTeamCondition(cteam.id, -2) // 迷路
-                            this.toast(`${cteam.name}_迷路`, 'warning');
+                            let load = Number(res.data.load) + Number(250) // (5食物 4水 5*10+4*50)
+                            for (let i = 0; i < res.data.modules.length; i++) {
+                                const e = res.data.modules[i];
+                                if (e.type == 0) {
+                                    food = e.statistic_module.number - 5 // 沙尘暴无⛺️ 消耗 5个食物
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, food)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除-食物')
+                                }
+                                if (e.type == 1) {
+                                    water = e.statistic_module.number - 4 // 沙尘暴无⛺️ 消耗 4个水
+                                    await apis.updateFoodWaternumber(e.statistic_module.id, water)
+                                    await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 4, e.id, 1, '组委会：天气扣除-水')
+                                }
+                            }
+                            console.log('计算消耗的剩余食物和水', food, water)
+                            await apis.updateLoad(res.data.id, load)
+                            // 更新迷路时间
+                            await apis.updateOneTeamLose(cteam.id, 3)
+                            // 更新团队状态
+                            if (food < 0 || water < 0) {
+                                await apis.updateOneTeamCondition(cteam.id, -3) // 死亡
+                                console.error('死亡', cteam)
+                                this.toast(`${cteam.name}_死亡`, 'warning');
+                            } else {
+                                await apis.updateOneTeamCondition(cteam.id, -2) // 迷路
+                                this.toast(`${cteam.name}_迷路`, 'warning');
+                            }
+                            judge++
+                            console.log(judge)
                         }
-                        judge++
-                        console.log(judge)
                     }
                 }
-
+                
                 console.groupEnd();
                 if (judge == team.length) {
                     // 更新day_id
