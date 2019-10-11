@@ -15,6 +15,7 @@ import listgame from '@/adminComponents/game/listgame'
 import stransation from '@/adminComponents/run/stransation'
 import sstastics from '@/adminComponents/run/sstastics'
 import syear from '@/adminComponents/run/syear'
+import srank from '@/adminComponents/run/srank'
 
 Vue.use(Router)
 
@@ -74,6 +75,11 @@ export default new Router({
           path:'syear',   //赛事数据
           name:'syear',
           component:syear
+        },
+        {
+          path:'srank',   //赛事数据
+          name:'srank',
+          component:srank
         }
       ]
     }

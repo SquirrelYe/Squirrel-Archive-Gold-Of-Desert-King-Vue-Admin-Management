@@ -119,6 +119,7 @@ export default {
       if(x===0) return '大本营交易';
       if(x===1) return '小组间交易';
       if(x===2) return '金块兑换';
+      if(x==3) return '村庄交易';
     },
     formatModule(x){
       if(x==-1) return '金币';

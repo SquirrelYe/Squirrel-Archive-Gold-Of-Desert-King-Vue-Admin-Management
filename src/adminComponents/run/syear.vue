@@ -225,6 +225,7 @@ export default {
             if (x == -3) return '死亡';
             if (x == 1) return '使用帐篷中';
             if (x == 2) return '使用指南针中';
+            if (x == 4) return '达到大本营';
         }
     },
     methods: {
@@ -444,14 +445,12 @@ export default {
             if(game.day.day == 1){
                 await apis.updateOneGameDayById(this.gid, this.day_id + 1);
                 let day = await apis.updateGameJudgeWhetherById(this.gid, 0);
-                if (day.data[0] == 1) {
-                    s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
-                    this.init()
-                    return;
-                }
+                s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
+                this.init()
+                return;
             }
             //  判断能否进入下一天（默认时间为1 ，时间最大26，所有人必须位于当前日期）
-            if (game.day.day <= 26) {
+            if (game.day.day < 26) {
                 if (item.judgewhether == 0) {
                     s_alert.Warning('请先开启天气显示 ', '未开启天气显示，参赛人员无法操作');
                     return;
@@ -460,13 +459,26 @@ export default {
                     for (let i = 0; i < team.length; i++) {
                         const e = team[i].day.day;
                         const curTeam = team[i];
-                        // 获取过滤的 存活队伍
+                        // 获取过滤队伍 （过滤 死亡，已到达大本营）
                         console.log(curTeam)
-                        if (curTeam.condition != -3) filterTeams.push(curTeam);
+                        if (curTeam.condition != -3 && curTeam.condition != 4) filterTeams.push(curTeam);
                     }
                     // 执行资产清算
                     console.log(filterTeams);
-                    this.updateRelief(game, filterTeams);
+                    // filterTeams 长度 0，无队伍
+                    if(filterTeams.length == 0){
+                        await apis.updateOneGameDayById(this.gid, this.day_id + 1);
+                        let res = await apis.updateGameJudgeWhetherById(this.gid, 0);
+                        if (res.data[0] == 1) {
+                            s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
+                            this.init()
+                            return;
+                        }
+                    }
+                    // 有队伍
+                    else{
+                        this.updateRelief(game, filterTeams);
+                    }
                 }
             } else {
                 s_alert.Success('最后一天啦', '第25天为最后一天，再无后续日期可以进入！', 'warning')
@@ -507,19 +519,19 @@ export default {
                 let food, water;
                 // 判断是否已经迷路（已经迷路的 消耗 10食物 5水）
                 if(condition == -2){
-                    let load = Number(res.data.load) + Number(350) // (10食物 5水 10*10 + 5*50)
+                    let load = Number(res.data.load) + Number(250) // (5食物 4水 5*10 + 4*50)
                     // 计算消耗
                     for (let i = 0; i < res.data.modules.length; i++) {
                         const e = res.data.modules[i];
                         if (e.type == 0) {
-                            food = e.statistic_module.number - 10 // 迷路消耗 10食物
+                            food = e.statistic_module.number - 5 // 迷路消耗 5食物
                             await apis.updateFoodWaternumber(e.statistic_module.id, food)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 10, e.id, 1, '组委会：天气扣除迷路-食物')
+                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除迷路-食物')
                         }
                         if (e.type == 1) {
-                            water = e.statistic_module.number - 5 // 迷路消耗 5水
+                            water = e.statistic_module.number - 4 // 迷路消耗 4水
                             await apis.updateFoodWaternumber(e.statistic_module.id, water)
-                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 5, e.id, 1, '组委会：天气扣除迷路-水')
+                            await apis.addOneTran(this.gid, -1, cteam.id, cteam.id, 0, 4, e.id, 1, '组委会：天气扣除迷路-水')
                         }
                     }
                     console.log('计算消耗的剩余食物和水', food, water)
@@ -730,17 +742,20 @@ export default {
                         }
                     }
                 }
-                
+
+                // 重置 isDig 为 0
+                let isDig = await apis.updateOneTeamIsDig(cteam.id);
+                console.log(isDig.data);
                 console.groupEnd();
                 if (judge == team.length) {
                     // 更新day_id
-                    // await apis.updateOneGameDayById(this.gid, this.day_id + 1);
-                    // let res = await apis.updateGameJudgeWhetherById(this.gid, 0);
-                    // if (res.data[0] == 1) {
-                    //     s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
-                    //     this.init()
-                    // }
-                    s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
+                    await apis.updateOneGameDayById(this.gid, this.day_id + 1);
+                    let res = await apis.updateGameJudgeWhetherById(this.gid, 0);
+                    if (res.data[0] == 1) {
+                        s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
+                        this.init()
+                    }
+                    // s_alert.Success('成功进入下一天', '参赛队伍资产更新成功', 'success')
                 }
             };
         },

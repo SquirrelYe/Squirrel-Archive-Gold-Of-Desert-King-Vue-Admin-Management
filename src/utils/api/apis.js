@@ -25,6 +25,7 @@ module.exports={
     updateOneTeamCondition(id,c){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'condition':c }) },
     updateOneTeamLose(id,l){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'lose':l }) },
     updateOneTeamStatistic(id,sid,lose,dig){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'statistic_id':sid,'lose':lose,'isDig':dig }) },
+    updateOneTeamIsDig(id){ return req.post_Param('/api/ent/team',{'judge':3,'id':id ,'isDig':0 }) },
     // 交易信息
     getAllTransaction(){ return req.post_Param('api/ass/transaction',{'judge':0}) },
     getAllTransationByTeamId(id){ return req.post_Param('api/ass/transaction',{'judge':4, 'team_id':id}) },
@@ -37,9 +38,11 @@ module.exports={
     updateMoney(id, money){ return req.post_Param('api/ent/statistic',{'judge':3, 'id':id , 'money':money }) },
     updateLoad(id, load){ return req.post_Param('api/ent/statistic',{'judge':3, 'id':id , 'load':load }) },
     findTeamStock(statistic_id){ return req.post_Param('api/ass/statistic_module',{'judge':4, 'statistic_id':statistic_id}) },
+    getAssStatisticById(statistic_id){ return req.post_Param('api/ass/statistic',{'judge':1, statistic_id }) },
 
     findOrCreate(statistic_id,module_id,number,use){ return req.post_Param('api/ass/statistic_module',{'judge':1, 'statistic_id':statistic_id, 'module_id':module_id, 'number':number, 'use':use}) },
     update_number(id,statistic_id,module_id,number,use){ return req.post_Param('api/ass/statistic_module',{'judge':2,'id':id, 'statistic_id':statistic_id, 'module_id':module_id, 'number':number, 'use':use}) },
     updateFoodWaternumber(id,number){ return req.post_Param('api/ass/statistic_module',{'judge':2,'id':id, 'number':number }) },
-
+    // 排名信息 /ass/rank?judge=2&game_id=1
+    getRank(game_id){ return req.post_Param('api/ass/rank',{'judge':2, game_id }); }
 }

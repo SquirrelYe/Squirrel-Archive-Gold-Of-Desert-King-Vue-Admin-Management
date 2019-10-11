@@ -184,7 +184,7 @@
                                   <td>M-{{item.id}}</td>
                                   <td>{{item.land | formatLand}}</td> 
                                   <td class="actions">
-                                    <a class="waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="编辑天气" @click="editLand(item)">
+                                    <a class="waves-effect waves-light" data-toggle="tooltip" data-placement="top" title="编辑地形" @click="editLand(item)">
                                       <i class="fa  fa-pencil" data-toggle="modal" data-target="#edit"></i>
                                     </a>
                                 </td>            

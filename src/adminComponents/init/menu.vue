@@ -128,6 +128,9 @@
                     <a href="javascript:void(0)" @click="stransation()">交易管理</a>
                   </li>
                   <li>
+                    <a href="javascript:void(0)" @click="srank()">赛事排名</a>
+                  </li>
+                  <li>
                     <a href="javascript:void(0)" @click="sstastics()">赛事数据</a>
                   </li>
                 </ul>
@@ -253,6 +256,7 @@ export default {
     syear(){this.$router.push({name:'syear'})},   //赛事运营
     stransation(){this.$router.push({name:'stransation'})},
     sstastics(){this.$router.push({name:'sstastics'})},
+    srank(){this.$router.push({name:'srank'})},
 
     logout(){ this.$router.push({name:'login'}) }
   },
