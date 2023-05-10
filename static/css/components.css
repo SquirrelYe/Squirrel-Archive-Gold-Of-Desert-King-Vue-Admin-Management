@@ -23,19 +23,23 @@ File: Components
   -webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
   border-radius: 2px;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
-  font-family: 'Nunito', sans-serif;
+  font-family: "Nunito", sans-serif;
   letter-spacing: 0.2px;
   opacity: 0.93;
 }
 .btn:hover {
-  -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
-  -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12);
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
   opacity: 1;
 }
 .btn:focus {
-  -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
-  -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16),
+    0 2px 10px 0 rgba(0, 0, 0, 0.12);
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
   opacity: 1;
 }
@@ -379,20 +383,20 @@ File: Components
 .panel-fill.panel-inverse {
   background-color: #4a4a4a;
 }
-.panel-group .panel .panel-heading a[data-toggle=collapse].collapsed:before {
-  content: '\f067';
+.panel-group .panel .panel-heading a[data-toggle="collapse"].collapsed:before {
+  content: "\f067";
 }
 .panel-group .panel .panel-heading .accordion-toggle.collapsed:before {
-  content: '\f067';
+  content: "\f067";
 }
-.panel-group .panel .panel-heading a[data-toggle=collapse] {
+.panel-group .panel .panel-heading a[data-toggle="collapse"] {
   display: block;
 }
-.panel-group .panel .panel-heading a[data-toggle=collapse]:before {
-  content: '\f068';
+.panel-group .panel .panel-heading a[data-toggle="collapse"]:before {
+  content: "\f068";
   display: block;
   float: right;
-  font-family: 'FontAwesome';
+  font-family: "FontAwesome";
   font-size: 14px;
   text-align: right;
   width: 25px;
@@ -401,10 +405,10 @@ File: Components
   display: block;
 }
 .panel-group .panel .panel-heading .accordion-toggle:before {
-  content: '\f068';
+  content: "\f068";
   display: block;
   float: right;
-  font-family: 'FontAwesome';
+  font-family: "FontAwesome";
   font-size: 14px;
   text-align: right;
   width: 25px;
@@ -517,7 +521,7 @@ File: Components
   animation: loaderAnimate2 1000ms ease-in-out infinite;
   border-radius: 50%;
   clip: rect(0, 30px, 30px, 15px);
-  content: '';
+  content: "";
   height: 30px;
   position: absolute;
   width: 30px;
@@ -577,7 +581,7 @@ File: Components
 }
 .checkbox input[type="checkbox"]:checked + label::after {
   content: "\f00c";
-  font-family: 'FontAwesome';
+  font-family: "FontAwesome";
 }
 .checkbox input[type="checkbox"]:disabled + label::before {
   background-color: #eeeeee;
@@ -1112,7 +1116,7 @@ div.dataTables_info {
 .select2-container .select2-choice {
   background-image: none !important;
   border: none !important;
-  height: auto  !important;
+  height: auto !important;
   padding: 0px !important;
   line-height: 22px !important;
   background-color: transparent !important;
@@ -1149,7 +1153,7 @@ div.dataTables_info {
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
   box-shadow: none !important;
   background: transparent !important;
-  background-image: none  !important;
+  background-image: none !important;
   -webkit-border-radius: 4px !important;
   border-radius: 4px !important;
   -moz-border-radius: 4px !important;
@@ -1243,7 +1247,7 @@ div.dataTables_info {
   font-size: 16px;
 }
 .fc-state-hover {
-  background: #F5F5F5;
+  background: #f5f5f5;
 }
 .fc-state-highlight {
   background: #f0f0f0;

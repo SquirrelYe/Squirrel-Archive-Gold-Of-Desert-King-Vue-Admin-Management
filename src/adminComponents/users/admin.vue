@@ -14,15 +14,28 @@
           </div>
           <div class="panel-body">
             <div class="row">
-
               <div class="col-sm-6">
-                <div class="m-b-30" data-toggle="modal" data-target="#myindus" @click="add()">
-                    <button id="addToTable" class="btn btn-primary waves-effect waves-light">添加管理员<i class="fa fa-plus"></i></button>
+                <div
+                  class="m-b-30"
+                  data-toggle="modal"
+                  data-target="#myindus"
+                  @click="add()"
+                >
+                  <button
+                    id="addToTable"
+                    class="btn btn-primary waves-effect waves-light"
+                  >
+                    添加管理员<i class="fa fa-plus"></i>
+                  </button>
                 </div>
               </div>
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="table-responsive">
-                  <table class="table table-bordered table-striped" style id="datatable-editable">
+                  <table
+                    class="table table-bordered table-striped"
+                    style
+                    id="datatable-editable"
+                  >
                     <thead>
                       <tr>
                         <th>#</th>
@@ -36,17 +49,29 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="gradeX" v-for="(item,index) in showItems" :key="index">
-                        <td>{{index}}</td>
-                        <td>{{item.id}}</td>
-                        <td>{{item.name}}</td>
-                        <td>{{item.pass}}</td>
-                        <td>{{item.mail}}</td>
-                        <td>{{item.phone}}</td>
-                        <td>{{item.created_at|formatTime}}</td>
-                        <td class="actions" align='center'>
-                          <a class="on-default remove-row" @click="isDeleteItem(item)">
-                            <i class="fa fa-trash-o" data-toggle="tooltip" data-placement="top" title="删除管理员"></i>
+                      <tr
+                        class="gradeX"
+                        v-for="(item, index) in showItems"
+                        :key="index"
+                      >
+                        <td>{{ index }}</td>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.pass }}</td>
+                        <td>{{ item.mail }}</td>
+                        <td>{{ item.phone }}</td>
+                        <td>{{ item.created_at | formatTime }}</td>
+                        <td class="actions" align="center">
+                          <a
+                            class="on-default remove-row"
+                            @click="isDeleteItem(item)"
+                          >
+                            <i
+                              class="fa fa-trash-o"
+                              data-toggle="tooltip"
+                              data-placement="top"
+                              title="删除管理员"
+                            ></i>
                           </a>
                         </td>
                       </tr>
@@ -55,31 +80,59 @@
                 </div>
                 <div class="row">
                   <div class="col-sm-6">
-                    <div class="dataTables_info float-left" id="datatable-editable_info" role="status" aria-live="polite" >展示 {{PageShowSum}} 总共 {{items.length}} 项</div>
+                    <div
+                      class="dataTables_info float-left"
+                      id="datatable-editable_info"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      展示 {{ PageShowSum }} 总共 {{ items.length }} 项
+                    </div>
                   </div>
                   <div class="col-sm-6">
-                    <div class="dataTables_paginate paging_simple_numbers" id="datatable-editable_paginate" >
-                      <ul class="pagination" style="float:right">
-                        <li class="paginate_button previous" :class="{ disabled: currentPage=='0' }">
-                          <a href="javascript:void(0)" @click="previousPage()">上一页</a>
+                    <div
+                      class="dataTables_paginate paging_simple_numbers"
+                      id="datatable-editable_paginate"
+                    >
+                      <ul class="pagination" style="float: right">
+                        <li
+                          class="paginate_button previous"
+                          :class="{ disabled: currentPage == '0' }"
+                        >
+                          <a href="javascript:void(0)" @click="previousPage()"
+                            >上一页</a
+                          >
                         </li>
-                        <li class="paginate_button" v-for="(item,index) in sumPage" :key="index" :class="{ active: currentPage==index }" >
-                          <a href="javascript:void(0)" @click="switchPage(index)">{{++index}}</a>
+                        <li
+                          class="paginate_button"
+                          v-for="(item, index) in sumPage"
+                          :key="index"
+                          :class="{ active: currentPage == index }"
+                        >
+                          <a
+                            href="javascript:void(0)"
+                            @click="switchPage(index)"
+                            >{{ ++index }}</a
+                          >
                         </li>
-                        <li class="paginate_button next" :class="{ disabled: currentPage==sumPage-1 }">
-                          <a href="javascript:void(0)" @click="nextPage()">下一页</a>
+                        <li
+                          class="paginate_button next"
+                          :class="{ disabled: currentPage == sumPage - 1 }"
+                        >
+                          <a href="javascript:void(0)" @click="nextPage()"
+                            >下一页</a
+                          >
                         </li>
                       </ul>
                     </div>
                   </div>
                 </div>
-                
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </template>
 
@@ -90,12 +143,12 @@ const req = require("../../utils/axios");
 const print = require("../../utils/print");
 const apis = require("../../utils/api/apis");
 
-const moment = require('moment');
+const moment = require("moment");
 
 export default {
   name: "admin",
   data() {
-    return {      
+    return {
       // 分页数据
       items: [],
       showItems: [],
@@ -104,54 +157,64 @@ export default {
       sumPage: null,
     };
   },
-  filters:{
-    formatTime(x){ return moment(x).format('YYYY-MM-DD HH:mm:ss') }
+  filters: {
+    formatTime(x) {
+      return moment(x).format("YYYY-MM-DD HH:mm:ss");
+    },
   },
-  mounted() { this.init() },
-  updated() {  $(function () { $("[data-toggle='tooltip']").tooltip(); }); },
+  mounted() {
+    this.init();
+  },
+  updated() {
+    $(function () {
+      $("[data-toggle='tooltip']").tooltip();
+    });
+  },
   methods: {
-    init(){ this.getAllUser(); },
+    init() {
+      this.getAllUser();
+    },
     // 添加
-    add(){
-      s_alert.Warning('请联系后台技术人员处理','涉及到权限问题，您暂时无法处理')
+    add() {
+      s_alert.Warning(
+        "请联系后台技术人员处理",
+        "涉及到权限问题，您暂时无法处理"
+      );
     },
     // 获取所有参赛者
     getAllUser() {
-      apis.getAllUserByType(1)
-        .then(res => {
-          print.log(res.data);
-          // 分页
-          this.currentPage='0'
-          this.show(res.data.rows)
-        })
+      apis.getAllUserByType(1).then((res) => {
+        print.log(res.data);
+        // 分页
+        this.currentPage = "0";
+        this.show(res.data.rows);
+      });
     },
     // 判断是否删除
     isDeleteItem(item) {
-      print.log('确定删除吗',item);
-      let del=item
-      let that=this
-      if(confirm('确定删除吗')){
-        that.DeleteItem(del)
-      }else{
-
-      }      
-    },    
+      print.log("确定删除吗", item);
+      let del = item;
+      let that = this;
+      if (confirm("确定删除吗")) {
+        that.DeleteItem(del);
+      } else {
+      }
+    },
     // 删除参赛者
-    DeleteItem(del){
-      apis.delOneUserById(del.id)
-      .then(res => {
-        if(res.data.affectRows === 1){
-            this.init()
-            s_alert.Success("删除成功!", "成功移除了一名管理员", "success");
-          }else{
-            this.init()
-            s_alert.Success("删除失败!", "请检查", "warning");
-          }
-      })
+    DeleteItem(del) {
+      apis.delOneUserById(del.id).then((res) => {
+        if (res.data.affectRows === 1) {
+          this.init();
+          s_alert.Success("删除成功!", "成功移除了一名管理员", "success");
+        } else {
+          this.init();
+          s_alert.Success("删除失败!", "请检查", "warning");
+        }
+      });
     },
     // -----------------------------------------------------------分页模板-------------------------------------------------------------
     show(items) {
-      this.items=items;
+      this.items = items;
       this.sumPage = Math.ceil(this.items.length / this.PageShowSum);
       //页面加载完成，默认加载第一页
       let page = Number(this.currentPage) + 1;
@@ -198,13 +261,10 @@ export default {
         print.log("当前-->", p + 1);
         this.showEachPage(p + 1);
       }
-    }
+    },
     //结束分页
-
-  }
+  },
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

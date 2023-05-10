@@ -13,20 +13,34 @@
             <h3 class="panel-title">沙漠掘金后台管理系统-参赛团队交易情况</h3>
           </div>
           <div class="form-group row">
-              <form class="form-horizontal" role="form">  
-                <div class="col-md-3">
-                  <!-- <div class="col-md-4 control-label" style="color:red"><strong>团队名称</strong></div> -->
-                  <div class="col-md-8">
-                      <select class="form-control" v-model="choosedTeam_id" @change="getTranByTeam_id()">
-                          <option v-for="(item,index) in team" :key="index" :value="item.id">{{item.name}}</option>
-                      </select>
-                  </div>
+            <form class="form-horizontal" role="form">
+              <div class="col-md-3">
+                <!-- <div class="col-md-4 control-label" style="color:red"><strong>团队名称</strong></div> -->
+                <div class="col-md-8">
+                  <select
+                    class="form-control"
+                    v-model="choosedTeam_id"
+                    @change="getTranByTeam_id()"
+                  >
+                    <option
+                      v-for="(item, index) in team"
+                      :key="index"
+                      :value="item.id"
+                    >
+                      {{ item.name }}
+                    </option>
+                  </select>
                 </div>
-              </form>
-          </div> 
+              </div>
+            </form>
+          </div>
           <div class="panel-body">
             <div class="table-responsive">
-              <table class="table table-striped table-hover" style id="datatable-editable">
+              <table
+                class="table table-striped table-hover"
+                style
+                id="datatable-editable"
+              >
                 <thead>
                   <tr>
                     <th>#</th>
@@ -42,35 +56,64 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="gradeX" v-for="(item,index) in showItems" :key="index">
-                    <td>{{item.id}}</td>
-                    <td>{{item.type|formatType}}</td>
-                    <td v-if="item.module">{{item.module.type | formatModule}}</td><td v-else></td>
-                    <td>{{item.price}}</td> 
-                    <td>{{item.number}}</td>
-                    <td>{{item.condition | formatCondition}}</td>
-                    <td>{{item.detail}}</td>
-                    <td v-if="item.out">{{item.out.name}}</td><td v-else></td>
-                    <td v-if="item.in">{{item.in.name}}</td><td v-else></td>
-                    <td>{{item.created_at|formatTime}}</td>
+                  <tr
+                    class="gradeX"
+                    v-for="(item, index) in showItems"
+                    :key="index"
+                  >
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.type | formatType }}</td>
+                    <td v-if="item.module">
+                      {{ item.module.type | formatModule }}
+                    </td>
+                    <td v-else></td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.number }}</td>
+                    <td>{{ item.condition | formatCondition }}</td>
+                    <td>{{ item.detail }}</td>
+                    <td v-if="item.out">{{ item.out.name }}</td>
+                    <td v-else></td>
+                    <td v-if="item.in">{{ item.in.name }}</td>
+                    <td v-else></td>
+                    <td>{{ item.created_at | formatTime }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <!-- 分页 -->
             <div class="col-sm-6">
-              <div class="dataTables_info float-left" id="datatable-editable_info" role="status" aria-live="polite" >展示 {{PageShowSum}} 总共 {{items.length}} 项</div>
+              <div
+                class="dataTables_info float-left"
+                id="datatable-editable_info"
+                role="status"
+                aria-live="polite"
+              >
+                展示 {{ PageShowSum }} 总共 {{ items.length }} 项
+              </div>
             </div>
             <div class="col-sm-6">
-              <div class="dataTables_paginate paging_simple_numbers" id="datatable-editable_paginate" >
-                <ul class="pagination" style="float:right">
-                  <li class="paginate_button previous" :class="{ disabled: currentPage=='0' }">
-                    <a href="javascript:void(0)" @click="previousPage()">上一页</a>
+              <div
+                class="dataTables_paginate paging_simple_numbers"
+                id="datatable-editable_paginate"
+              >
+                <ul class="pagination" style="float: right">
+                  <li
+                    class="paginate_button previous"
+                    :class="{ disabled: currentPage == '0' }"
+                  >
+                    <a href="javascript:void(0)" @click="previousPage()"
+                      >上一页</a
+                    >
                   </li>
                   <li class="paginate_button active">
-                    <a href="javascript:void(0)" @click="switchPage(index)">{{Number(currentPage)+1}}</a>
+                    <a href="javascript:void(0)" @click="switchPage(index)">{{
+                      Number(currentPage) + 1
+                    }}</a>
                   </li>
-                  <li class="paginate_button next" :class="{ disabled: currentPage==sumPage-1 }">
+                  <li
+                    class="paginate_button next"
+                    :class="{ disabled: currentPage == sumPage - 1 }"
+                  >
                     <a href="javascript:void(0)" @click="nextPage()">下一页</a>
                   </li>
                 </ul>
@@ -79,7 +122,7 @@
           </div>
         </div>
       </div>
-    </div>    
+    </div>
   </div>
 </template>
 
@@ -96,9 +139,9 @@ export default {
   name: "stransaction",
   data() {
     return {
-      choosedTeam_id:'',
-      showTransaction: '',
-      team:'',
+      choosedTeam_id: "",
+      showTransaction: "",
+      team: "",
       // 分页数据
       items: [],
       showItems: [],
@@ -108,65 +151,63 @@ export default {
     };
   },
   mounted() {
-    this.init()
+    this.init();
   },
-  filters:{
+  filters: {
     formatTime(x) {
       return moment(x).format("YYYY-MM-DD HH:mm:ss");
     },
-    formatType(x){
-      if(x===-1) return '组委会处理';
-      if(x===0) return '大本营交易';
-      if(x===1) return '小组间交易';
-      if(x===2) return '金块兑换';
-      if(x==3) return '村庄交易';
+    formatType(x) {
+      if (x === -1) return "组委会处理";
+      if (x === 0) return "大本营交易";
+      if (x === 1) return "小组间交易";
+      if (x === 2) return "金块兑换";
+      if (x == 3) return "村庄交易";
     },
-    formatModule(x){
-      if(x==-1) return '金币';
-      if(x==0) return '食物';
-      if(x==1) return '水';
-      if(x==2) return '指南针';
-      if(x==3) return '帐篷';
-      if(x==4) return '智者密函';
-      if(x==5) return '金块';
+    formatModule(x) {
+      if (x == -1) return "金币";
+      if (x == 0) return "食物";
+      if (x == 1) return "水";
+      if (x == 2) return "指南针";
+      if (x == 3) return "帐篷";
+      if (x == 4) return "智者密函";
+      if (x == 5) return "金块";
     },
-    formatCondition(x){
-      if(x==-1) return '交易失败';
-      if(x==0) return '未完成';
-      if(x==1) return '交易完成';
-    }
+    formatCondition(x) {
+      if (x == -1) return "交易失败";
+      if (x == 0) return "未完成";
+      if (x == 1) return "交易完成";
+    },
   },
   methods: {
-    init(){
+    init() {
       this.getAllTeam();
     },
     // 获取按id查询的团队交易信息
     showAllTransaction(team_id) {
-      apis.getAllTransationByTeamId(team_id)
-      .then(res => {
-          print.log(res.data);
-          this.showTransaction = res.data.rows;
-          // 分页
-          this.currentPage='0'
-          this.show(res.data.rows)
-      })
+      apis.getAllTransationByTeamId(team_id).then((res) => {
+        print.log(res.data);
+        this.showTransaction = res.data.rows;
+        // 分页
+        this.currentPage = "0";
+        this.show(res.data.rows);
+      });
     },
     //获取团队列表
-    getAllTeam(){        
-        apis.getAllTeam()
-        .then(res => {
-          this.team = res.data.rows;
-          print.log('所有团队列表->',res.data.rows)
-        })
+    getAllTeam() {
+      apis.getAllTeam().then((res) => {
+        this.team = res.data.rows;
+        print.log("所有团队列表->", res.data.rows);
+      });
     },
     // 选择团队显示交易信息
-    getTranByTeam_id(){
-      this.showAllTransaction(this.choosedTeam_id)
+    getTranByTeam_id() {
+      this.showAllTransaction(this.choosedTeam_id);
     },
 
     // -----------------------------------------------------------分页模板-------------------------------------------------------------
     show(items) {
-      this.items=items;
+      this.items = items;
       this.sumPage = Math.ceil(this.items.length / this.PageShowSum);
       //页面加载完成，默认加载第一页
       let page = Number(this.currentPage) + 1;
@@ -213,11 +254,10 @@ export default {
         print.log("当前-->", p + 1);
         this.showEachPage(p + 1);
       }
-    }
+    },
     //结束分页
-  }
+  },
 };
 </script>
 
-<style>
-</style>
+<style></style>

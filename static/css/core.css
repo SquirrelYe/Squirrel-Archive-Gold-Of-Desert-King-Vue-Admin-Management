@@ -19,7 +19,7 @@ File: Common
 ===================*/
 body {
   background: #f5f5f5;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: "Noto Sans", sans-serif;
   margin: 0;
 }
 html {
@@ -35,7 +35,7 @@ h4,
 h5,
 h6 {
   color: #505458;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   margin: 10px 0;
 }
 h1 {
@@ -110,9 +110,9 @@ a:focus {
 }
 .social-links li a {
   -webkit-border-radius: 50%;
-  background: #EFF0F4;
+  background: #eff0f4;
   border-radius: 50%;
-  color: #7A7676;
+  color: #7a7676;
   display: inline-block;
   height: 30px;
   line-height: 30px;
@@ -493,7 +493,7 @@ a:focus {
 .modal .modal-dialog .modal-content {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
-  border-color: #DDDDDD;
+  border-color: #dddddd;
   border-radius: 2px;
   box-shadow: none;
   padding: 30px;
@@ -1178,12 +1178,15 @@ a:focus {
   }
 }
 @media print {
-  .logo,.page-title,.breadcrumb,.footer {
+  .logo,
+  .page-title,
+  .breadcrumb,
+  .footer {
     display: none !important;
     margin: 0px !important;
     padding: 0px !important;
   }
-   
+
   .left {
     display: none;
   }
@@ -1198,5 +1201,4 @@ a:focus {
     margin-left: 0px !important;
     margin-top: 0px;
   }
-  
 }

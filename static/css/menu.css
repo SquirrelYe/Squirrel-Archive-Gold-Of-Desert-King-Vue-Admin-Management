@@ -26,7 +26,7 @@ File: Topbar,Left-sidebar,Right-sidebar
   color: #212121 !important;
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   line-height: 70px;
   text-transform: uppercase;
 }
@@ -203,7 +203,7 @@ body.fixed-left .side-menu.left {
   color: #ffffff;
 }
 #sidebar-menu ul ul a {
-  color: #75798B;
+  color: #75798b;
   display: block;
   padding: 10px 25px 10px 65px;
 }
@@ -379,7 +379,7 @@ body.fixed-left .side-menu.left {
 .user-details .user-info a.dropdown-toggle {
   color: #ffffff;
   display: block;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-size: 16px;
   font-weight: 600;
   padding-top: 5px;

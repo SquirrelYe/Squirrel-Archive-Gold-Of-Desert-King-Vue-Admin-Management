@@ -19,7 +19,9 @@ module.exports = {
     let all = this.items;
     this.showItems = [];
     for (
-      let i = (page - 1) * this.PageShowSum; i < page * this.PageShowSum; i++
+      let i = (page - 1) * this.PageShowSum;
+      i < page * this.PageShowSum;
+      i++
     ) {
       if (all[i] == null) {
         break;
@@ -47,5 +49,5 @@ module.exports = {
       print.log("当前-->", p + 1);
       this.showEachPage(p + 1);
     }
-  }
-}
+  },
+};
